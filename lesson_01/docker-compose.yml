@@ -1,0 +1,81 @@
+services:
+  app:
+    container_name: app
+    build:
+      dockerfile: Dockerfile
+      context: .
+    ports:
+      - "8080:8080"
+    environment:
+      PROM_PUSHGATEWAY_ADDR: "pushgateway:9091"
+      GRAPHITE_HOST: "graphite"
+      GRAPHITE_PORT: "2003"
+      STATSD_HOST: "graphite"
+      STATSD_PORT: "8125"
+      LOKI_HOST: "loki:3100"
+      PYROSCOPE_ADDR: "http://pyroscope:4040"
+
+  prometheus:
+    container_name: prometheus
+    image: prom/prometheus:v3.1.0
+    volumes:
+      - ./docker/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+    ports:
+        - "9090:9090"
+
+  pushgateway:
+    container_name: pushgateway
+    image: prom/pushgateway:v1.11.0
+    ports:
+      - "9091:9091"
+
+  grafana:
+    image: grafana/grafana:11.2.0
+    container_name: grafana
+    volumes:
+      - "./docker/grafana/definitions:/var/lib/grafana/dashboards"
+      - "./docker/grafana/provisioning:/etc/grafana/provisioning"
+    ports:
+      - "3000:3000"
+    environment:
+      - GF_FEATURE_TOGGLES_ENABLE=flameGraph traceqlSearch traceQLStreaming correlations metricsSummary traceqlEditor traceToMetrics traceToProfiles datatrails
+      - GF_INSTALL_PLUGINS=grafana-lokiexplore-app,grafana-exploretraces-app,grafana-pyroscope-app
+      - GF_AUTH_ANONYMOUS_ENABLED=true
+      - GF_AUTH_ANONYMOUS_ORG_ROLE=Admin
+      - GF_AUTH_DISABLE_LOGIN_FORM=true
+
+  graphite:
+    image: graphiteapp/graphite-statsd
+    container_name: graphite
+    volumes:
+      - ./docker/graphite/storage-schemas.conf:/opt/graphite/conf/storage-schemas.conf:ro
+    ports:
+      - "8081:80"
+      - "2003:2003"
+      - "8125:8125"
+
+  loki:
+    image: grafana/loki:3.3.2
+    container_name: loki
+    ports:
+      - "3100:3100"
+
+  promtail:
+    image: grafana/promtail:latest
+    container_name: promtail
+    volumes:
+      - ./docker/promtail/promtail.yaml:/etc/promtail/config.yaml
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+    command: -config.file=/etc/promtail/config.yaml
+    ports:
+      - "9080:9080"
+
+  pyroscope:
+    image: grafana/pyroscope:1.9.2
+    container_name: pyroscope
+    ports:
+      - "4040:4040"
+    command: [ "server" ]

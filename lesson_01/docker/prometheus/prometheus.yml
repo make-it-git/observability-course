@@ -1,0 +1,20 @@
+global:
+  scrape_interval: 10s
+  scrape_timeout: 1s
+
+scrape_configs:
+  - job_name: pushgateway
+    metrics_path: /metrics
+    scheme: http
+    honor_labels: true
+    static_configs:
+      - targets: ['pushgateway:9091']
+        labels:
+          service: 'pushgateway'
+  - job_name: app
+    metrics_path: /metrics
+    scheme: http
+    static_configs:
+      - targets: ['app:8080']
+        labels:
+          service: 'app'
