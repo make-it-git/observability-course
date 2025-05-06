@@ -1,0 +1,85 @@
+version: "3.9"
+services:
+  ride-request:
+    container_name: ride-request
+    build:
+      context: ./service-ride-request
+    ports:
+      - "8080:8080"
+    environment:
+      MATCHING_ENGINE_URL: http://matching-engine:8080
+    depends_on:
+      - matching-engine
+    networks:
+      - taxi-network
+
+  matching-engine:
+    container_name: matching-engine
+    build:
+      context: ./service-matching-engine
+    environment:
+      DRIVER_LOCATION_URL: http://driver-location:8080
+    depends_on:
+      - driver-location
+    networks:
+      - taxi-network
+
+  driver-location:
+    container_name: driver-location
+    build:
+      context: ./service-driver-location
+    networks:
+      - taxi-network
+
+  prometheus:
+    container_name: prometheus
+    image: prom/prometheus:v3.1.0
+    volumes:
+      - ./docker/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+    ports:
+      - "9090:9090"
+    networks:
+      - taxi-network
+
+  loki:
+    image: grafana/loki:3.3.2
+    container_name: loki
+    ports:
+      - "3100:3100"
+    networks:
+      - taxi-network
+
+  grafana:
+    image: grafana/grafana:11.2.0
+    container_name: grafana
+    volumes:
+      - "./docker/grafana/provisioning:/etc/grafana/provisioning"
+    ports:
+      - "3000:3000"
+    environment:
+      - GF_FEATURE_TOGGLES_ENABLE=flameGraph traceqlSearch traceQLStreaming correlations metricsSummary traceqlEditor traceToMetrics traceToProfiles datatrails
+      - GF_INSTALL_PLUGINS=grafana-lokiexplore-app,grafana-exploretraces-app,grafana-pyroscope-app
+      - GF_AUTH_ANONYMOUS_ENABLED=true
+      - GF_AUTH_ANONYMOUS_ORG_ROLE=Admin
+      - GF_AUTH_DISABLE_LOGIN_FORM=true
+    networks:
+      - taxi-network
+
+  promtail:
+    image: grafana/promtail:latest
+    container_name: promtail
+    volumes:
+      - ./docker/promtail/promtail.yaml:/etc/promtail/config.yaml
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+    command: -config.file=/etc/promtail/config.yaml
+    ports:
+      - "9080:9080"
+    networks:
+      - taxi-network
+
+networks:
+  taxi-network:
+    driver: bridge
