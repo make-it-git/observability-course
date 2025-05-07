@@ -1,0 +1,55 @@
+services:
+  product-catalog-replica-1:
+    container_name: product-catalog-01
+    build:
+      context: ./product-catalog
+    ports:
+      - "8080:8080"
+    environment:
+      - REPLICA_NUM=1
+    networks:
+      - product-catalog-network
+
+  product-catalog-replica-2:
+    container_name: product-catalog-02
+    build:
+      context: ./product-catalog
+    ports:
+      - "8081:8080"
+    environment:
+      - REPLICA_NUM=2
+    networks:
+      - product-catalog-network
+
+  prometheus:
+    container_name: prometheus
+    image: prom/prometheus:v3.1.0
+    volumes:
+      - ./docker/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+    ports:
+      - "9090:9090"
+    networks:
+      - product-catalog-network
+
+  grafana:
+    image: grafana/grafana:11.2.0
+    container_name: grafana
+    volumes:
+      - "./docker/grafana/provisioning:/etc/grafana/provisioning"
+    ports:
+      - "3000:3000"
+    environment:
+      - GF_FEATURE_TOGGLES_ENABLE=flameGraph traceqlSearch traceQLStreaming correlations metricsSummary traceqlEditor traceToMetrics traceToProfiles datatrails
+      - GF_INSTALL_PLUGINS=grafana-lokiexplore-app,grafana-exploretraces-app,grafana-pyroscope-app
+      - GF_AUTH_ANONYMOUS_ENABLED=true
+      - GF_AUTH_ANONYMOUS_ORG_ROLE=Admin
+      - GF_AUTH_DISABLE_LOGIN_FORM=true
+    networks:
+      - product-catalog-network
+
+networks:
+  product-catalog-network:
+    driver: bridge
