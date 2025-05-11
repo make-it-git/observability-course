@@ -1,0 +1,17 @@
+global:
+  scrape_interval: 15s
+
+scrape_configs:
+  - job_name: 'app'
+    static_configs:
+      - targets: ['app:8080']
+        labels:
+          endpoint: 'common'
+    metrics_path: /metrics
+  - job_name: 'app_frequent'
+    scrape_interval: 1s # More frequent
+    static_configs:
+      - targets: ['app:8080']
+        labels:
+          endpoint: 'frequent'
+    metrics_path: /metrics_frequent

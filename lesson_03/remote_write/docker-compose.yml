@@ -1,0 +1,56 @@
+services:
+  app:
+    container_name: app
+    build:
+      context: app
+    ports:
+      - "8080:8080"
+    environment:
+      GRAPHITE_HOST: "graphite"
+      GRAPHITE_PORT: "2003"
+      ENV: "dev"
+
+  prometheus:
+    container_name: prometheus
+    image: prom/prometheus:latest
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./prometheus/prometheus.yml:/etc/prometheus/prometheus.yml
+    depends_on:
+      - app
+      - victoria
+
+  victoria:
+    container_name: victoria
+    image: victoriametrics/victoria-metrics:latest
+    ports:
+      - "8428:8428"
+    command:
+      - "--httpListenAddr=:8428"
+      - "--storageDataPath=/data"
+      - "--retentionPeriod=1d" # Храним данные за 1 день
+
+  graphite:
+    image: graphiteapp/graphite-statsd
+    container_name: graphite
+    volumes:
+      - ./graphite/storage-schemas.conf:/opt/graphite/conf/storage-schemas.conf:ro
+    ports:
+      - "8081:80"
+      - "2003:2003"
+      - "8125:8125"
+
+  grafana:
+    image: grafana/grafana:11.2.0
+    container_name: grafana
+    volumes:
+      - "./grafana/provisioning:/etc/grafana/provisioning"
+    ports:
+      - "3000:3000"
+    environment:
+      - GF_FEATURE_TOGGLES_ENABLE=flameGraph traceqlSearch traceQLStreaming correlations metricsSummary traceqlEditor traceToMetrics traceToProfiles datatrails
+      - GF_INSTALL_PLUGINS=grafana-lokiexplore-app,grafana-exploretraces-app,grafana-pyroscope-app,victoriametrics-metrics-datasource
+      - GF_AUTH_ANONYMOUS_ENABLED=true
+      - GF_AUTH_ANONYMOUS_ORG_ROLE=Admin
+      - GF_AUTH_DISABLE_LOGIN_FORM=true

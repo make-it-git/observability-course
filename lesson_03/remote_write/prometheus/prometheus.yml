@@ -1,0 +1,15 @@
+global:
+  scrape_interval: 1s
+
+scrape_configs:
+  - job_name: 'app'
+    static_configs:
+      - targets: ['app:8080']
+
+remote_write:
+  - url: "http://victoria:8428/api/v1/write"
+    write_relabel_configs:
+      - source_labels: [__name__]
+        regex: '.*'
+        target_label: __vm_tenant_id__
+        replacement: my_team

@@ -1,0 +1,54 @@
+services:
+  app:
+    container_name: app
+    build:
+      context: app
+    ports:
+      - "8080:8080"
+
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: prometheus
+    volumes:
+      - ./prometheus/prometheus.yml:/etc/prometheus/prometheus.yml
+      - prometheus_data:/prometheus
+    ports:
+      - "9090:9090"
+    command:
+      - "--config.file=/etc/prometheus/prometheus.yml"
+      - "--web.enable-lifecycle"
+      - "--web.enable-admin-api" # Important!
+      - "--storage.tsdb.path=/prometheus"
+    healthcheck:
+      test: ["CMD-SHELL", "curl -fs http://localhost:9090/graph || exit 1"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+
+  victoria-metrics:
+    image: victoriametrics/victoria-metrics:latest
+    container_name: victoria-metrics
+    ports:
+      - "8428:8428"
+    volumes:
+      - vmdata:/data
+    command:
+      - "--storageDataPath=/data"
+      - "--httpListenAddr=:8428"
+
+  vmctl-importer:
+    image: curlimages/curl
+    container_name: vmctl-importer
+    volumes:
+      - prometheus_data:/prometheus
+      - ./import.sh:/import.sh
+    depends_on:
+      - prometheus  # Wait for Prometheus to be healthy
+      - victoria-metrics # Wait for Victoria Metrics
+    command: ["/bin/sh", "/import.sh"]
+    entrypoint: ""
+    user: root
+
+volumes:
+  prometheus_data:
+  vmdata:
