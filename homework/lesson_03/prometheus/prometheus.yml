@@ -1,0 +1,103 @@
+global:
+  scrape_interval: 3s
+  scrape_timeout: 3s
+
+scrape_configs:
+  - job_name: 'prometheus'
+    static_configs:
+      - targets: ['prometheus:9090']
+  - job_name: 'app1'
+    static_configs:
+      - targets: ['app1:8080']
+  - job_name: 'app2'
+    static_configs:
+      - targets: [ 'app2:8080' ]
+
+# Здесь нужно настроить remote_write.
+# Для дополнительного задания нужно настроить recording rules.
+# Не листайте вниз к решению, пока не настроите сбор самостоятельно.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+#rule_files:
+#  - "/etc/prometheus/rules.yml"
+#
+#remote_write:
+#  - url: "http://victoria:8428/api/v1/write"

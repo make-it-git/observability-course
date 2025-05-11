@@ -1,0 +1,120 @@
+global:
+  scrape_interval: 10s
+  scrape_timeout: 5s
+
+# Здесь вам нужно настроить сбор метрик с другого инстанса prometheus через federation
+# Не листайте вниз к решению, пока не настроите сбор самостоятельно.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+#scrape_configs:
+#  - job_name: 'federate'
+#    honor_labels: true
+#    metrics_path: '/federate'
+#    params:
+#      'match[]':
+#        - '{__name__=~"recorded:.*"}'
+#    static_configs:
+#      - targets:
+#          - 'prometheus:9090'

@@ -191,20 +191,18 @@
 
 
 
-
-
-global:
-  scrape_interval: 10s
-  scrape_timeout: 1s
-
-scrape_configs:
-  - job_name: product-catalog-01
-    static_configs:
-      - targets: ['product-catalog-01:8080']
-        labels:
-          k8s_node: 'node-01'
-  - job_name: product-catalog-02
-    static_configs:
-      - targets: ['product-catalog-02:8080']
-        labels:
-          k8s_node: 'node-02'
+#global:
+#  scrape_interval: 10s
+#  scrape_timeout: 1s
+#
+#scrape_configs:
+#  - job_name: product-catalog-01
+#    static_configs:
+#      - targets: ['product-catalog-01:8080']
+#        labels:
+#          k8s_node: 'node-01'
+#  - job_name: product-catalog-02
+#    static_configs:
+#      - targets: ['product-catalog-02:8080']
+#        labels:
+#          k8s_node: 'node-02'

@@ -1,0 +1,60 @@
+services:
+  app1:
+    container_name: app1
+    build:
+      context: app1
+    ports:
+      - "8080:8080"
+
+  app2:
+    container_name: app2
+    build:
+      context: app2
+    ports:
+      - "8081:8080"
+
+  prometheus:
+    container_name: prometheus
+    image: prom/prometheus:latest
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./prometheus/prometheus.yml:/etc/prometheus/prometheus.yml
+      - ./prometheus/rules.yml:/etc/prometheus/rules.yml
+    depends_on:
+      - app1
+      - victoria
+
+  prometheus-federation:
+    container_name: prometheus-federation
+    image: prom/prometheus:latest
+    ports:
+      - "9091:9090"
+    volumes:
+      - ./prometheus/prometheus-federation.yml:/etc/prometheus/prometheus.yml
+    depends_on:
+      - prometheus
+
+  victoria:
+    container_name: victoria
+    image: victoriametrics/victoria-metrics:latest
+    ports:
+      - "8428:8428"
+    command:
+      - "--httpListenAddr=:8428"
+      - "--storageDataPath=/data"
+      - "--retentionPeriod=1d"
+
+  grafana:
+    image: grafana/grafana:11.2.0
+    container_name: grafana
+    volumes:
+      - "./grafana/provisioning:/etc/grafana/provisioning"
+    ports:
+      - "3000:3000"
+    environment:
+      - GF_FEATURE_TOGGLES_ENABLE=flameGraph traceqlSearch traceQLStreaming correlations metricsSummary traceqlEditor traceToMetrics traceToProfiles datatrails
+      - GF_INSTALL_PLUGINS=grafana-lokiexplore-app,grafana-exploretraces-app,grafana-pyroscope-app,victoriametrics-metrics-datasource
+      - GF_AUTH_ANONYMOUS_ENABLED=true
+      - GF_AUTH_ANONYMOUS_ORG_ROLE=Admin
+      - GF_AUTH_DISABLE_LOGIN_FORM=true
