@@ -1,0 +1,155 @@
+services:
+  redis:
+    container_name: redis
+    image: redis:alpine
+    ports:
+      - "6379:6379"
+
+  pyroscope:
+    container_name: pyroscope
+    image: grafana/pyroscope
+    ports:
+      - "4040:4040"
+    command:
+      - "server"
+    environment:
+      - PYROSCOPE_STORAGE_PATH=/var/lib/pyroscope
+      - PYROSCOPE_API_BASEPATH=/
+
+  redis_exporter:
+    image: oliver006/redis_exporter
+    container_name: redis_exporter
+    ports:
+      - "9121:9121"
+    environment:
+      - REDIS_ADDR=redis:6379
+    depends_on:
+      - redis
+
+  otel-collector:
+    container_name: otel-collector
+    image: otel/opentelemetry-collector:latest
+    command: ["--config=/etc/otel-collector-config.yaml"]
+    depends_on:
+      - tempo
+    volumes:
+      - ./infra/otel/otel-collector-config.yaml:/etc/otel-collector-config.yaml
+
+  victoriametrics:
+    container_name: victoriametrics
+    image: victoriametrics/victoria-metrics:latest
+    ports:
+      - "8428:8428"
+      - "8089:8089"
+    command:
+      - "--promscrape.config=/etc/prometheus/prometheus.yml"
+    volumes:
+      - ./infra/victoriametrics/prometheus.yml:/etc/prometheus/prometheus.yml
+
+  prometheus:
+    image: prom/prometheus
+    container_name: prometheus
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--enable-feature=exemplar-storage'
+    ports:
+      - 9090:9090
+    volumes:
+      - ./infra/victoriametrics/prometheus.yml:/etc/prometheus/prometheus.yml
+
+  graphite:
+    container_name: graphite
+    image: graphiteapp/graphite-statsd:latest
+    ports:
+      - "8082:80"
+      - "2003:2003"
+      - "8125:8125"
+
+  tempo:
+    container_name: tempo
+    image: grafana/tempo:latest
+    command: ["-config.file=/etc/tempo.yaml"]
+    volumes:
+      - ./infra/tempo/tempo.yaml:/etc/tempo.yaml
+
+  loki:
+    container_name: loki
+    image: grafana/loki:latest
+    command: ["-config.file=/etc/loki/local-config.yaml"]
+    ports:
+      - "3100:3100"
+    volumes:
+      - ./infra/loki/local-config.yaml:/etc/loki/local-config.yaml
+
+  grafana:
+    container_name: grafana
+    image: grafana/grafana:11.1.13
+    ports:
+      - "3000:3000"
+    environment:
+      - GF_AUTH_ANONYMOUS_ENABLED=true
+      - GF_AUTH_ANONYMOUS_ORG_ROLE=Admin
+      - GF_SECURITY_ADMIN_PASSWORD=admin
+      - GF_SECURITY_ADMIN_USER=admin
+      - GF_FEATURE_TOGGLES_ENABLE=traceqlEditor
+      - GF_PLUGINS_ENABLE=tempo,loki,pyroscope
+      - GF_INSTALL_PLUGINS=https://github.com/grafana/grafana-infinity-datasource/releases/download/v2.4.0/yesoreyeram-infinity-datasource-2.4.0.zip;yesoreyeram-infinity-datasource
+    volumes:
+      - ./infra/grafana/provisioning:/etc/grafana/provisioning
+
+  driver-location-service:
+    container_name: driver-location-service
+    build:
+      context: ./driver-location-service
+      dockerfile: Dockerfile
+    ports:
+      - "8080:8080"
+    depends_on:
+      - redis
+      - otel-collector
+      - victoriametrics
+      - graphite
+    environment:
+      - REDIS_ADDR=redis:6379
+      - OTEL_EXPORTER_OTLP_ENDPOINT=http://otel-collector:4317
+      - TRACK_ANALYZER_URL=http://track-analyzer-service:8080
+
+  track-analyzer-service:
+    container_name: track-analyzer-service
+    build:
+      context: ./track-analyzer-service
+      dockerfile: Dockerfile
+    ports:
+      - "8081:8080"
+    depends_on:
+      - redis
+      - otel-collector
+      - victoriametrics
+      - graphite
+      - pyroscope
+    environment:
+      - REDIS_ADDR=redis:6379
+      - OTEL_EXPORTER_OTLP_ENDPOINT=http://otel-collector:4317
+      - PYROSCOPE_SERVER_ADDRESS=http://pyroscope:4040
+
+  promtail:
+    container_name: promtail
+    image: grafana/promtail:latest
+    command: -config.file=/etc/promtail/promtail-config.yaml
+    volumes:
+      - ./infra/promtail/promtail-config.yaml:/etc/promtail/promtail-config.yaml
+      - /var/run/docker.sock:/var/run/docker.sock
+
+  node-exporter:
+    container_name: node-exporter
+    image: prom/node-exporter:latest
+    ports:
+      - "9100:9100"
+    volumes:
+      - /proc:/host/proc:ro
+      - /sys:/host/sys:ro
+      - /:/rootfs:ro
+    command:
+      - "--path.procfs=/host/proc"
+      - "--path.sysfs=/host/sys"
+      - "--collector.filesystem.ignored-mount-points=^/(sys|proc|dev|host|etc)($$|/)"
