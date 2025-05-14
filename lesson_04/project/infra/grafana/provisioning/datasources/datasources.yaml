@@ -61,3 +61,15 @@ datasources:
     jsonData:
       type: rest
       dataFormat: json
+
+  - name: Clickhouse
+    type: grafana-clickhouse-datasource
+    uid: clickhouse
+    jsonData:
+      host: clickhouse
+      port: 9000
+      protocol: native
+      secure: false
+      username: admin # the username used for authentication.
+    secureJsonData:
+      password: admin

@@ -28,12 +28,14 @@ services:
 
   otel-collector:
     container_name: otel-collector
-    image: otel/opentelemetry-collector:latest
+    image: otel/opentelemetry-collector-contrib:latest
     command: ["--config=/etc/otel-collector-config.yaml"]
     depends_on:
       - tempo
     volumes:
       - ./infra/otel/otel-collector-config.yaml:/etc/otel-collector-config.yaml
+      - /var/lib/docker/containers:/var/lib/docker/containers:ro
+    user: "0" # Strong no!
 
   victoriametrics:
     container_name: victoriametrics
@@ -81,6 +83,13 @@ services:
     volumes:
       - ./infra/loki/local-config.yaml:/etc/loki/local-config.yaml
 
+  clickhouse:
+    container_name: clickhouse
+    image: clickhouse/clickhouse-server
+    environment:
+      CLICKHOUSE_USER: admin
+      CLICKHOUSE_PASSWORD: admin
+
   grafana:
     container_name: grafana
     image: grafana/grafana:11.1.13
@@ -93,7 +102,8 @@ services:
       - GF_SECURITY_ADMIN_USER=admin
       - GF_FEATURE_TOGGLES_ENABLE=traceqlEditor
       - GF_PLUGINS_ENABLE=tempo,loki,pyroscope
-      - GF_INSTALL_PLUGINS=https://github.com/grafana/grafana-infinity-datasource/releases/download/v2.4.0/yesoreyeram-infinity-datasource-2.4.0.zip;yesoreyeram-infinity-datasource
+      - GF_INSTALL_PLUGINS=https://github.com/grafana/grafana-infinity-datasource/releases/download/v2.4.0/yesoreyeram-infinity-datasource-2.4.0.zip;yesoreyeram-infinity-datasource;grafana-clickhouse-datasource
+
     volumes:
       - ./infra/grafana/provisioning:/etc/grafana/provisioning
 
