@@ -36,3 +36,7 @@ scrape_configs:
     relabel_configs:
       - target_label: instance
         replacement: 'node-01'
+
+  - job_name: 'grafana'
+    static_configs:
+      - targets: [ 'grafana:3000' ]

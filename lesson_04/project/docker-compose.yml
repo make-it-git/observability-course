@@ -49,11 +49,11 @@ services:
       - ./infra/victoriametrics/prometheus.yml:/etc/prometheus/prometheus.yml
 
   prometheus:
-    image: prom/prometheus
+    image: prom/prometheus:v3.4.0
     container_name: prometheus
     command:
       - '--config.file=/etc/prometheus/prometheus.yml'
-      - '--enable-feature=exemplar-storage'
+      - '--enable-feature=exemplar-storage,promql-experimental-functions'
     ports:
       - 9090:9090
     volumes:
