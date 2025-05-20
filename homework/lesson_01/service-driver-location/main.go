@@ -23,6 +23,11 @@ var (
 		Help: "Total number of HTTP requests.",
 	}, []string{"method", "path", "status"})
 
+	http500ErrorsCounter = promauto.NewCounterVec(prometheus.CounterOpts{
+		Name: "http_500_error_total",
+		Help: "Total number of requests with 500 status code.",
+	}, []string{"path"})
+
 	driverLocationHTTPRequestsLatency = promauto.NewHistogramVec(prometheus.HistogramOpts{
 		Name:    "http_requests_latency_seconds",
 		Help:    "HTTP request latency in seconds.",
@@ -34,7 +39,7 @@ var (
 	// A more useful metric would be a gauge that's updated periodically with the current count of available drivers.
 	totalDriversGauge = promauto.NewGauge(prometheus.GaugeOpts{
 		Name: "total_drivers",
-		Help: "Total number of drivers (INCORRECT - should be current count)",
+		Help: "Current number of drivers",
 	})
 
 	// A better metric will be a current number of available drivers
@@ -47,7 +52,7 @@ var (
 var availableDrivers = []string{"driver1", "driver2", "driver3", "driver4", "driver5"}
 
 // Atomic counter for total number of drivers (used for the INCORRECT metric)
-var totalDrivers int64 = 0
+var totalDrivers int64 = int64(len(availableDrivers))
 
 func main() {
 	rand.Seed(time.Now().UnixNano())
@@ -72,8 +77,10 @@ func availableDriversHandler(w http.ResponseWriter, r *http.Request) {
 	if rand.Intn(10) == 0 {
 		log.Println("Querying database")
 		time.Sleep(time.Second * 10) // Slow response, we face timeout from database
-		// but instead of return 5xx to the caller we decided to return empty list of drivers
-		json.NewEncoder(w).Encode([]string{})
+		// add metric for 500 errors if db returns timeout
+		http500ErrorsCounter.WithLabelValues("/avalible-drives").Add(1)
+		// fix to throwing error Database timeout
+		http.Error(w, "Database timeout", http.StatusInternalServerError)
 		return
 	}
 
@@ -94,22 +101,23 @@ func getAvailableDrivers() []string {
 func updateDriverAvailability() {
 	for {
 		time.Sleep(time.Duration(rand.Intn(5)) * time.Second) // Simulate random intervals
-
 		// Simulate driver joining or leaving
 		if rand.Intn(2) == 0 { // 50% chance of a driver becoming available
 			newDriver := fmt.Sprintf("driver%d", rand.Intn(100)+6) // Create a new driver ID
 			availableDrivers = append(availableDrivers, newDriver)
 			log.Printf("Driver joined: %s\n", newDriver)
 			atomic.AddInt64(&totalDrivers, 1) // Update the (INCORRECT) total drivers count
-			totalDriversGauge.Inc()           // Incorrect usage:  This will just keep incrementing.
 		} else { // 50% chance of a driver becoming unavailable
 			if len(availableDrivers) > 0 {
 				indexToRemove := rand.Intn(len(availableDrivers))
 				driverToRemove := availableDrivers[indexToRemove]
 				availableDrivers = append(availableDrivers[:indexToRemove], availableDrivers[indexToRemove+1:]...)
 				log.Printf("Driver left: %s\n", driverToRemove)
+				atomic.AddInt64(&totalDrivers, -1)
 			}
 		}
+		// Update the 'totalDriversGauge' with the current number of total drivers after changes
+		totalDriversGauge.Set(float64(totalDrivers))
 		// Update the 'availableDriversGauge' with the current number of available drivers after changes
 		availableDriversGauge.Set(float64(len(availableDrivers)))
 	}
