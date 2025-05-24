@@ -1,0 +1,25 @@
+services:
+  fluentbit:
+    image: cr.fluentbit.io/fluent/fluent-bit
+    ports:
+      - "24224:24224"
+      - "24224:24224/udp"
+    volumes:
+      - ./:/fluent-bit/etc/
+  flog:
+    image: mingrammer/flog
+    command: '-l'
+    depends_on:
+      - fluentbit
+    logging:
+      driver: fluentd
+      options:
+        tag: apache
+  nginx:
+    image: kscarlett/nginx-log-generator
+    depends_on:
+      - fluentbit
+    logging:
+      driver: fluentd
+      options:
+        tag: nginx
