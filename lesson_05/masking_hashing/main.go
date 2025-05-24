@@ -7,7 +7,9 @@ import (
 	"github.com/sirupsen/logrus"
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
+	"log/slog"
 	"os"
+	"unicode/utf8"
 )
 
 func main() {
@@ -15,6 +17,8 @@ func main() {
 	logrusExample()
 	fmt.Println("********ZAP*******")
 	zapExample()
+	fmt.Println("********slog*******")
+	slogExample()
 }
 
 func logrusExample() {
@@ -92,4 +96,48 @@ func zapExample() {
 		zap.String("credit_card", "1111-2222-3333-4444"),
 		zap.Int("amount", 100),
 	)
+}
+
+type User struct {
+	ID        string `json:"id"`
+	FirstName string `json:"first_name"`
+	LastName  string `json:"last_name"`
+	Email     string `json:"email"`
+	Password  string `json:"password"`
+}
+
+func (u *User) LogValue() slog.Value {
+	return slog.StringValue(fmt.Sprintf("id=%s, first_name=%s", u.ID, firstLetter(u.FirstName)))
+}
+
+// firstLetter extracts first letter from the unicode string
+func firstLetter(s string) string {
+	r, size := utf8.DecodeRuneInString(s)
+	if r == utf8.RuneError && size <= 1 {
+		return s
+	}
+	return string(r)
+}
+
+func slogExample() {
+	handler := slog.NewJSONHandler(os.Stdout, nil)
+	logger := slog.New(handler)
+
+	u := &User{
+		ID:        "100500",
+		FirstName: "Jan",
+		LastName:  "Doe",
+		Email:     "jan@example.com",
+	}
+	u2 := &User{
+		ID:        "100500",
+		FirstName: "😀Jan",
+		LastName:  "Doe",
+		Email:     "jan@example.com",
+	}
+
+	logger.Info("info", "user", u)
+	logger.Info("info", "user2", u2)
+	fmt.Println(string(u2.FirstName[0]))   // garbage, like "ð"
+	fmt.Println(string(u2.FirstName[0:4])) // 😀
 }
