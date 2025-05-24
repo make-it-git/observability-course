@@ -1,0 +1,26 @@
+apiVersion: 1
+
+datasources:
+  - name: Loki
+    type: loki
+    access: proxy
+    url: http://loki:3100
+    uid: loki
+    jsonData:
+      maxLines: 1000
+      derivedFields:
+        - datasourceUid: tempo
+          matcherRegex: "\"traceID\":\"(\\w+)\""
+          name: TraceID
+          url: "$${__value.raw}"
+  - name: Clickhouse
+    type: grafana-clickhouse-datasource
+    uid: clickhouse
+    jsonData:
+      host: clickhouse
+      port: 9000
+      protocol: native
+      secure: false
+      username: admin
+    secureJsonData:
+      password: admin

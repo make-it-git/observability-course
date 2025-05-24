@@ -1,0 +1,68 @@
+receivers:
+  otlp:
+    protocols:
+      grpc:
+        endpoint: 0.0.0.0:4317
+      http:
+        endpoint: 0.0.0.0:4318
+  filelog:
+    include:
+      - /var/lib/docker/containers/*/*.log
+    start_at: end
+    operators:
+      - type: json_parser
+        parse_from: body
+        timestamp:
+          parse_from: attributes.time
+          layout: '%Y-%m-%dT%H:%M:%S.%LZ'
+
+processors:
+  batch:
+  attributes/env:
+    actions:
+      - key: environment
+        value: production
+        action: insert
+  attributes/hash:
+    actions:
+      - key: personal_identifier
+        action: hash
+  memory_limiter:
+    check_interval: 5s
+    limit_mib: 4000
+    spike_limit_mib: 500
+
+exporters:
+  otlphttp/loki:
+    endpoint: "http://loki:3100/otlp"
+  clickhouse:
+    endpoint: tcp://clickhouse:9000?dial_timeout=10s&compress=lz4&async_insert=1&username=admin&password=admin
+    logs_table_name: otel_logs
+    create_schema: true
+    timeout: 5s
+    database: default
+    sending_queue:
+      queue_size: 1000
+    retry_on_failure:
+      enabled: true
+      initial_interval: 5s
+      max_interval: 30s
+      max_elapsed_time: 300s
+  debug:
+
+service:
+  telemetry:
+    logs:
+      level: "debug"
+  pipelines:
+    logs/loki:
+      receivers: [otlp]
+      processors: [batch, attributes/env]
+      exporters: [otlphttp/loki]
+    logs/clickhouse:
+      receivers: [otlp]
+      processors: [batch, attributes/env, attributes/hash]
+      exporters: [clickhouse]
+    logs/filelog:
+      receivers: [filelog]
+      exporters: [debug]
