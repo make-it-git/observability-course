@@ -1,0 +1,26 @@
+receivers:
+  otlp:
+    protocols:
+      grpc:
+        endpoint: "0.0.0.0:4317"
+
+processors:
+  batch:
+
+exporters:
+  debug:
+    verbosity: "detailed"
+
+service:
+  telemetry:
+    logs:
+      level: "debug"
+  pipelines:
+    traces:
+      receivers: [otlp]
+      processors: [batch]
+      exporters: [debug]
+    logs:
+      receivers: [otlp]
+      processors: [batch]
+      exporters: [debug]
