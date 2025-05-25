@@ -1,0 +1,110 @@
+# Не скролльте вниз, пока не попробуете настроить самостоятельно
+
+# receivers уже доступны
+receivers:
+  otlp:
+    protocols:
+      grpc:
+        endpoint: 0.0.0.0:4317
+      http:
+        endpoint: 0.0.0.0:4318
+
+processors:
+  # Здесь стоит что-то добавить
+  batch:
+
+exporters:
+  # Здесь нужно настроить экспорт в loki
+  otlphttp/loki:
+    endpoint: "http://loki:3100/otlp"
+
+service:
+  # Здесь нужно настроить pipelines доставки логов
+  pipelines:
+    logs/loki:
+      receivers: [otlp]
+      processors: [batch]
+      exporters: [otlphttp/loki]
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+# Пример решения
+#receivers:
+#  otlp:
+#    protocols:
+#      grpc:
+#        endpoint: 0.0.0.0:4317
+#      http:
+#        endpoint: 0.0.0.0:4318
+#
+#processors:
+#  batch:
+#
+#exporters:
+#  otlphttp/loki:
+#    endpoint: "http://loki:3100/otlp"
+#
+#service:
+#  pipelines:
+#    logs/loki:
+#      receivers: [otlp]
+#      processors: [batch]
+#      exporters: [otlphttp/loki]
