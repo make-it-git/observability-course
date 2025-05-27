@@ -4,11 +4,8 @@ go 1.23.5
 
 require (
 	github.com/go-chi/chi/v5 v5.2.1
-	github.com/remychantenay/slog-otel v1.3.4
-	go.opentelemetry.io/contrib/bridges/otelslog v0.11.0
 	go.opentelemetry.io/otel v1.36.0
 	go.opentelemetry.io/otel/exporters/otlp/otlplog/otlploggrpc v0.12.2
-	go.opentelemetry.io/otel/exporters/stdout/stdoutlog v0.12.2
 	go.opentelemetry.io/otel/log v0.12.2
 	go.opentelemetry.io/otel/sdk v1.36.0
 	go.opentelemetry.io/otel/sdk/log v0.12.2

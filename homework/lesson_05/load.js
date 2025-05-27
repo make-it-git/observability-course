@@ -12,8 +12,8 @@ export const options = {
         },
     },
     thresholds: {
-        'http_req_duration': ['p(90)<500'], // 90% of requests should be below 500ms
-        'http_req_failed': ['rate<0.1'],    // Error rate should be less than 10%
+        'http_req_duration': ['p(99)<100'], // 99% of requests should be below 100ms
+        'http_req_failed': ['rate<0.01'],    // Error rate should be less than 1%
     },
 };
 
@@ -37,7 +37,7 @@ export default function () {
         },
     };
     const id = Math.floor(Math.random() * 50000) + 1;
-    const res = http.get(`http://localhost:8080/user/${id}`, );
+    const res = http.get(`http://localhost:8080/user/${id}`, params);
     check(res, {
         'is status 200': (r) => r.status === 200,
         'response time is acceptable': (r) => r.timings.duration < 500,

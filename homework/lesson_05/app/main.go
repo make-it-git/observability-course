@@ -2,8 +2,9 @@ package main
 
 import (
 	"context"
+	"errors"
+	"fmt"
 	"github.com/go-chi/chi/v5"
-	"go.opentelemetry.io/contrib/bridges/otelslog"
 	"go.opentelemetry.io/otel/attribute"
 	"go.opentelemetry.io/otel/exporters/otlp/otlplog/otlploggrpc"
 	"go.opentelemetry.io/otel/log/global"
@@ -22,6 +23,9 @@ import (
 )
 
 func main() {
+	consoleLogger := slog.New(slog.NewJSONHandler(os.Stdout, &slog.HandlerOptions{Level: slog.LevelInfo}))
+	slog.SetDefault(consoleLogger)
+
 	ctx, cancelCtx := context.WithCancel(context.Background())
 	loggerShutdown := setupLogger(ctx)
 	defer cancelCtx()
@@ -39,16 +43,16 @@ func main() {
 	apiRouter.Route("/user", func(r chi.Router) {
 		r.Get("/{id}", func(w http.ResponseWriter, r *http.Request) {
 			region := r.Header.Get("X-Region")
-			if region == "VN" || region == "ZA" {
-				if rand.Intn(100) > 90 {
-					slog.ErrorContext(ctx, "Request failed", "userID", chi.URLParam(r, "id"), "region", region)
-					w.WriteHeader(500)
-					w.Write([]byte("KO"))
-					return
-				}
+			userID := chi.URLParam(r, "id")
+			result, err := handleRequest(region, userID)
+			if err != nil {
+				slog.ErrorContext(ctx, "Request failed", "path", "/user/{userID}", "userID", userID, "region", region)
+				w.WriteHeader(500)
+				w.Write([]byte(err.Error()))
+				return
 			}
-			slog.InfoContext(ctx, "Request handled", "path", "/user/{userID}", "userID", chi.URLParam(r, "id"), "region", region)
-			w.Write([]byte("OK"))
+			slog.InfoContext(ctx, "Request handled", "path", "/user/{userID}", "userID", userID, "region", region)
+			w.Write([]byte(result))
 		})
 	})
 	r.Mount("/", apiRouter)
@@ -134,9 +138,119 @@ func setupLogger(ctx context.Context) func() {
 	// Set the logger provider globally
 	global.SetLoggerProvider(lp)
 
-	slog.SetDefault(otelslog.NewLogger("main"))
-
 	return func() {
 		lp.Shutdown(ctx)
 	}
+}
+
+// Do not scroll below this line unless you have built required dashboard as was stated in homework
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+
+func handleRequest(region string, userID string) (string, error) {
+	if region == "VN" {
+		if rand.Intn(100) > 95 {
+			return "", errors.New("unexpected error")
+		}
+	}
+
+	if region == "ZA" {
+		if rand.Intn(100) > 90 {
+			return "", errors.New("unexpected error")
+		}
+	}
+
+	if region == "IN" {
+		if rand.Intn(100) > 80 {
+			return "", errors.New("unexpected error")
+		}
+	}
+
+	return fmt.Sprintf("data for region %s for user %s: dummy data", region, userID), nil
 }
