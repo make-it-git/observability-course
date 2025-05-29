@@ -5,8 +5,11 @@ import (
 	"errors"
 	"fmt"
 	"github.com/go-chi/chi/v5"
+	slogmulti "github.com/samber/slog-multi"
+	"go.opentelemetry.io/contrib/bridges/otelslog"
 	"go.opentelemetry.io/otel/attribute"
 	"go.opentelemetry.io/otel/exporters/otlp/otlplog/otlploggrpc"
+	_ "go.opentelemetry.io/otel/exporters/stdout/stdoutlog"
 	"go.opentelemetry.io/otel/log/global"
 	"go.opentelemetry.io/otel/sdk/log"
 	"go.opentelemetry.io/otel/sdk/resource"
@@ -23,9 +26,6 @@ import (
 )
 
 func main() {
-	consoleLogger := slog.New(slog.NewJSONHandler(os.Stdout, &slog.HandlerOptions{Level: slog.LevelInfo}))
-	slog.SetDefault(consoleLogger)
-
 	ctx, cancelCtx := context.WithCancel(context.Background())
 	loggerShutdown := setupLogger(ctx)
 	defer cancelCtx()
@@ -80,7 +80,7 @@ func main() {
 		slog.InfoContext(ctx, "shutdown started", "signal", sig)
 		defer slog.InfoContext(ctx, "shutdown complete", "signal", sig)
 
-		ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
+		ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
 		defer cancel()
 
 		if err := srv.Shutdown(ctx); err != nil {
@@ -116,14 +116,11 @@ func setupLogger(ctx context.Context) func() {
 		panic(err)
 	}
 
-	/*
-		Otel can send details to console,
-		but it will clutter console and will make it unusable.
-		Feel free to uncomment to see in action.
-		consoleExporter, err := stdoutlog.New(stdoutlog.WithPrettyPrint())
-		if err != nil {
-			panic(err)
-		}*/
+	// Uncomment to see otel logs in console
+	// consoleExporter, err := stdoutlog.New(stdoutlog.WithPrettyPrint())
+	// if err != nil {
+	// 	panic(err)
+	// }
 
 	lp := log.NewLoggerProvider(
 		log.WithResource(r),
@@ -132,11 +129,19 @@ func setupLogger(ctx context.Context) func() {
 				logExporter,
 			),
 		),
-		//log.WithProcessor(log.NewSimpleProcessor(consoleExporter)),
+		//  Uncomment to see otel logs in console
+		// log.WithProcessor(log.NewSimpleProcessor(consoleExporter)),
 	)
 
 	// Set the logger provider globally
 	global.SetLoggerProvider(lp)
+
+	jsonHandler := slog.NewJSONHandler(os.Stdout, &slog.HandlerOptions{Level: slog.LevelInfo})
+	otelHandler := otelslog.NewLogger("app")
+	multiHandler := slogmulti.Fanout(jsonHandler, otelHandler.Handler())
+	logger := slog.New(multiHandler)
+
+	slog.SetDefault(logger)
 
 	return func() {
 		lp.Shutdown(ctx)

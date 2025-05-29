@@ -11,20 +11,29 @@ receivers:
 
 processors:
   # Здесь стоит что-то добавить
-  batch:
 
 exporters:
   # Здесь нужно настроить экспорт в loki
-  otlphttp/loki:
-    endpoint: "http://loki:3100/otlp"
 
+# Здесь нужно настроить pipelines доставки логов
+# Без правильной настройки collector не запустится
 service:
-  # Здесь нужно настроить pipelines доставки логов
   pipelines:
-    logs/loki:
-      receivers: [otlp]
-      processors: [batch]
-      exporters: [otlphttp/loki]
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -96,13 +105,16 @@ service:
 #        endpoint: 0.0.0.0:4318
 #
 #processors:
+#  # Здесь стоит что-то добавить
 #  batch:
 #
 #exporters:
+#  # Здесь нужно настроить экспорт в loki
 #  otlphttp/loki:
 #    endpoint: "http://loki:3100/otlp"
 #
 #service:
+#  # Здесь нужно настроить pipelines доставки логов
 #  pipelines:
 #    logs/loki:
 #      receivers: [otlp]

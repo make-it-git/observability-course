@@ -8,10 +8,8 @@ services:
       - "8080:8080"
     depends_on:
       - otel-collector
-    # Здесь надо настроить правильные otel переменные
     environment:
-      - OTEL_EXPORTER_OTLP_ENDPOINT=http://otel-collector:4317
-      - OTEL_SERVICE_NAME=my-example-service
+      HOMEWORK: somevalue    # Здесь надо настроить правильные otel переменные
 
   otel-collector:
     container_name: otel-collector
@@ -56,3 +54,57 @@ services:
     command: -config.file=/etc/promtail/config.yaml
     depends_on:
       - loki
+
+# Sample solution below
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+# Correct env variables for the "app" service
+# environment:
+#      - OTEL_EXPORTER_OTLP_ENDPOINT=http://otel-collector:4317
+#      - OTEL_SERVICE_NAME=homework-service
