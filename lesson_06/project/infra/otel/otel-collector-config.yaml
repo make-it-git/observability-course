@@ -5,6 +5,13 @@ receivers:
         endpoint: 0.0.0.0:4317
       http:
         endpoint: 0.0.0.0:4318
+  prometheus:
+    config:
+      scrape_configs:
+        - job_name: 'driver-location-service-via-otel-collector'
+          scrape_interval: 10s
+          static_configs:
+            - targets: [ 'driver-location-service:8080' ]
 
 processors:
   # ratelimit: Not implemented yet
@@ -69,7 +76,7 @@ service:
       processors: [batch, filter, probabilistic_sampler/traces, attributes/env]
       exporters: [debug, otlp, otlp/2]
     metrics:
-      receivers: [otlp]
+      receivers: [otlp, prometheus]
       processors: [batch]
       exporters: [prometheus]
     logs:
