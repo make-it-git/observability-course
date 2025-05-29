@@ -1,15 +1,3 @@
-# TODO
-# metrics: counter, gauge, summary, histogram (+)
-# http requests, cross servise requests, errors, latencies (+)
-
-# logs, including integration with traces (+)
-# traces (+)
-
-# profiles
-
-
-# feature toggle to return errors sometimes from track-analyzer-service
-# feature toggle to consume memory?
 services:
   redis:
     container_name: redis
