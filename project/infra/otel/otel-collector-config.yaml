@@ -1,0 +1,78 @@
+receivers:
+  otlp:
+    protocols:
+      grpc:
+        endpoint: 0.0.0.0:4317
+      http:
+        endpoint: 0.0.0.0:4318
+
+processors:
+  # ratelimit: Not implemented yet
+  batch:
+  attributes/env:
+    actions:
+      - key: environment
+        value: production
+        action: insert
+  probabilistic_sampler/traces:
+    sampling_percentage: 5
+  tail_sampling:
+  filter:
+    error_mode: ignore
+    traces:
+      span:
+        - 'attributes["driver_id"] == "90"'
+        - 'attributes["driver_id"] == "80"'
+  memory_limiter:
+    check_interval: 5s
+    limit_mib: 4000
+    spike_limit_mib: 500
+
+exporters:
+  otlp:
+    endpoint: tempo:4317
+    tls:
+      insecure: true
+  otlp/2:
+    endpoint: jaeger:4317
+    tls:
+      insecure: true
+  prometheus:
+    endpoint: "0.0.0.0:8889"
+    namespace: "driver_location"
+    const_labels:
+      service: "driver-location-service"
+  otlphttp/loki:
+    endpoint: "http://loki:3100/otlp"
+  debug:
+
+extensions:
+  zpages:
+    # https://github.com/open-telemetry/opentelemetry-collector/blob/main/extension/zpagesextension/README.md
+    endpoint: "0.0.0.0:55679" # http://localhost:55679/debug/pipelinez
+service:
+  extensions: [zpages]
+  telemetry:
+    logs:
+      level: "debug"
+    metrics:
+      level: detailed
+      readers:
+        - pull:
+            exporter:
+              prometheus:
+                host: '0.0.0.0'
+                port: 8888
+  pipelines:
+    traces:
+      receivers: [otlp]
+      processors: [batch, filter, probabilistic_sampler/traces, attributes/env]
+      exporters: [debug, otlp, otlp/2]
+    metrics:
+      receivers: [otlp]
+      processors: [batch]
+      exporters: [prometheus]
+    logs:
+      receivers: [otlp]
+      processors: [batch]
+      exporters: [debug, otlphttp/loki]

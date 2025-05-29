@@ -1,0 +1,13 @@
+package main
+
+import (
+	"net"
+	"net/http"
+)
+
+func main() {
+	addr := net.TCPAddr{Port: 1234}
+	http.ListenAndServe(addr.String(), http.HandlerFunc(func(writer http.ResponseWriter, request *http.Request) {
+		writer.WriteHeader(request.ProtoMajor)
+	}))
+}
