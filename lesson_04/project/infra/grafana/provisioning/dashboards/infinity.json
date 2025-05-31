@@ -18,7 +18,7 @@
   "editable": true,
   "fiscalYearStartMonth": 0,
   "graphTooltip": 0,
-  "id": 5,
+  "id": 4,
   "links": [],
   "panels": [
     {
@@ -89,7 +89,7 @@
         },
         "showHeader": true
       },
-      "pluginVersion": "11.5.2",
+      "pluginVersion": "11.1.13",
       "targets": [
         {
           "columns": [],
@@ -185,8 +185,8 @@
     },
     {
       "datasource": {
-        "type": "datasource",
-        "uid": "-- Mixed --"
+        "type": "yesoreyeram-infinity-datasource",
+        "uid": "infinity"
       },
       "fieldConfig": {
         "defaults": {
@@ -273,14 +273,6 @@
             "data": "",
             "method": "GET"
           }
-        },
-        {
-          "datasource": {
-            "type": "datasource",
-            "uid": "-- Dashboard --"
-          },
-          "hide": false,
-          "refId": "B"
         }
       ],
       "title": "Products by stock status",
@@ -367,9 +359,8 @@
       "type": "piechart"
     }
   ],
-  "preload": false,
   "refresh": "",
-  "schemaVersion": 40,
+  "schemaVersion": 39,
   "tags": [],
   "templating": {
     "list": []
