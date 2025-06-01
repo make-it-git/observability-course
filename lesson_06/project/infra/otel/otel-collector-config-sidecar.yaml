@@ -1,0 +1,69 @@
+# В этот коллектор сервис присылает 100% трейсов
+
+receivers:
+  otlp:
+    protocols:
+      grpc:
+        endpoint: 0.0.0.0:4317
+      http:
+        endpoint: 0.0.0.0:4318
+
+connectors:
+  routing:
+    default_pipelines: [traces/otlp1]
+    # Масштабирование аггрегаторов на основе trace_id
+    # Трейсы с одинаковым trace_id попадут в один и тот же аггрегатор
+    # Таким образом при недостатке ресурсов просто добавляем еще инстансов коллектора
+    # Более правильный подход - через loadbalancingexporter
+    # https://github.com/open-telemetry/opentelemetry-collector-contrib/tree/main/exporter/loadbalancingexporter
+    # Здесь пример с неравномерным распределением на основе prefix для trace_id
+    table:
+      - context: span
+        condition: 'IsMatch(span.trace_id.string, "^[a-f].*")' # https://github.com/open-telemetry/opentelemetry-collector-contrib/tree/main/pkg/ottl/contexts/ottlspan
+        pipelines: [traces/otlp1]
+      - context: span
+        condition: 'IsMatch(span.trace_id.string, "^[0-9].*")'
+        pipelines: [traces/otlp2]
+
+processors:
+  batch:
+    send_batch_size: 1000
+    timeout: 10s
+  memory_limiter:
+    limit_mib: 512  # Adjust based on sidecar resources
+    spike_limit_mib: 128
+    check_interval: 1s
+
+exporters:
+  otlp/collector1:
+    endpoint: otel-collector-aggregator-1:4317
+    tls:
+      insecure: true
+  otlp/collector2:
+    endpoint: otel-collector-aggregator-2:4317
+    tls:
+      insecure: true
+
+service:
+  telemetry:
+    logs:
+      level: "debug"
+    metrics:
+      level: detailed
+      readers:
+        - pull:
+            exporter:
+              prometheus:
+                host: '0.0.0.0'
+                port: 8888
+  pipelines:
+    traces/in:
+      receivers: [ otlp ]
+      processors: [ memory_limiter, batch ]
+      exporters: [ routing ]
+    traces/otlp1:
+      receivers: [ routing ]
+      exporters: [ otlp/collector1 ]
+    traces/otlp2:
+      receivers: [ routing ]
+      exporters: [ otlp/collector2 ]

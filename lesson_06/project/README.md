@@ -1,47 +1,40 @@
-
-## Cardinality explorer
-
-```
-http://localhost:8428/vmui/?#/cardinality
-```
-
-## Trigger deployment from pipeline
+### Run
 
 ```shell
-export PORT=2003
-export SERVER=localhost
-echo "deployments.production.service.track-analyzer-service 1 `date +%s`" | nc ${SERVER} ${PORT}
-export current_time=$(date +%s)
-export seconds_ago=$((60 * 40))
-export past_time=$((current_time - seconds_ago))
-echo "deployments.production.service.driver-location-service 1 $past_time" | nc ${SERVER} ${PORT}
+docker compose up -d --build --force-recreate 
 ```
 
-## Create fake load
+### Run simulated load
+```shell
+k6 run k6/load-test.js
+```
+
+### Grafana
+```
+http://localhost:3000
+```
+
+### Stop
 
 ```shell
-ab -n 1000000 -c 10 localhost:8080/metrics
+docker compose down -v
 ```
 
-## View exemplars
+### Feature toggle
 
-```shell
-curl -H 'Accept: application/openmetrics-text' localhost:8080/metrics | grep http_request_duration_seconds_bucket
-```
-
-## Feature toggles
-
-### Add fake delay to "add point" feature
+Для создания трейсов, сохраняемых на основе высокого latency, укажите 700/900 (таймаут - 1с)
 
 ```shell
 curl -X PUT localhost:8081/api/v1/features/add-point-delay-value-start -d '{"value": 700}' -v
 curl -X PUT localhost:8081/api/v1/features/add-point-delay-value-end -d   '{"value": 900}' -v
 ```
 
+Для получения трейсов, сохраняемых на основе ошибок в трейсах, укажите 900/1200 (таймаут - 1с).
+Они включат в себя и трейсы на основе высокого latency.
 
-### Add fake delay to "track analysis" feature
 ```shell
-curl -X PUT localhost:8081/api/v1/features/slow-save-track-analysis -d '{"value": true}' -v
+curl -X PUT localhost:8081/api/v1/features/add-point-delay-value-start -d '{"value": 900}' -v
+curl -X PUT localhost:8081/api/v1/features/add-point-delay-value-end -d   '{"value": 1200}' -v
 ```
 
-
+Эти значения указывают искуственную latency, создаваемую в сервисе, в миллисекундах.
