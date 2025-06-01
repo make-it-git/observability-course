@@ -125,9 +125,9 @@ services:
       - graphite
     environment:
       - REDIS_ADDR=redis:6379
-#      - OTEL_EXPORTER_OTLP_ENDPOINT=http://otel-collector:4317
+      - OTEL_EXPORTER_OTLP_ENDPOINT=http://otel-collector:4317
       # Конфиг для домашнего задания
-      - OTEL_EXPORTER_OTLP_ENDPOINT=http://otel-collector-sidecar:4317
+#      - OTEL_EXPORTER_OTLP_ENDPOINT=http://otel-collector-sidecar:4317
       - TRACK_ANALYZER_URL=http://track-analyzer-service:8080
       - OTEL_SERVICE_NAME=driver-location-service-otel
 #      - OTEL_EXPORTER_OTLP_PROTOCOL=http/json
@@ -147,9 +147,9 @@ services:
       - pyroscope
     environment:
       - REDIS_ADDR=redis:6379
-#      - OTEL_EXPORTER_OTLP_ENDPOINT=http://otel-collector:4317
+      - OTEL_EXPORTER_OTLP_ENDPOINT=http://otel-collector:4317
       # Конфиг для домашнего задания
-      - OTEL_EXPORTER_OTLP_ENDPOINT=http://otel-collector-sidecar:4317
+#      - OTEL_EXPORTER_OTLP_ENDPOINT=http://otel-collector-sidecar:4317
       - PYROSCOPE_SERVER_ADDRESS=http://pyroscope:4040
 
   promtail:
@@ -238,30 +238,30 @@ services:
 
 
 
-  otel-collector-sidecar:
-    container_name: otel-collector-sidecar
-    image: otel/opentelemetry-collector-contrib
-    command: [ "--config=/etc/otel-collector-config.yaml" ]
-    depends_on:
-      - tempo
-      - otel-collector-aggregator-1
-      - otel-collector-aggregator-2
-    volumes:
-      - ./infra/otel/otel-collector-config-sidecar.yaml:/etc/otel-collector-config.yaml
-
-  otel-collector-aggregator-1:
-    container_name: otel-collector-aggregator-1
-    image: otel/opentelemetry-collector-contrib
-    command: [ "--config=/etc/otel-collector-config.yaml" ]
-    depends_on:
-      - tempo
-    volumes:
-      - ./infra/otel/otel-collector-config-aggregator.yaml:/etc/otel-collector-config.yaml
-  otel-collector-aggregator-2:
-    container_name: otel-collector-aggregator-2
-    image: otel/opentelemetry-collector-contrib
-    command: [ "--config=/etc/otel-collector-config.yaml" ]
-    depends_on:
-      - tempo
-    volumes:
-      - ./infra/otel/otel-collector-config-aggregator.yaml:/etc/otel-collector-config.yaml
+#  otel-collector-sidecar:
+#    container_name: otel-collector-sidecar
+#    image: otel/opentelemetry-collector-contrib
+#    command: [ "--config=/etc/otel-collector-config.yaml" ]
+#    depends_on:
+#      - tempo
+#      - otel-collector-aggregator-1
+#      - otel-collector-aggregator-2
+#    volumes:
+#      - ./infra/otel/otel-collector-config-sidecar.yaml:/etc/otel-collector-config.yaml
+#
+#  otel-collector-aggregator-1:
+#    container_name: otel-collector-aggregator-1
+#    image: otel/opentelemetry-collector-contrib
+#    command: [ "--config=/etc/otel-collector-config.yaml" ]
+#    depends_on:
+#      - tempo
+#    volumes:
+#      - ./infra/otel/otel-collector-config-aggregator.yaml:/etc/otel-collector-config.yaml
+#  otel-collector-aggregator-2:
+#    container_name: otel-collector-aggregator-2
+#    image: otel/opentelemetry-collector-contrib
+#    command: [ "--config=/etc/otel-collector-config.yaml" ]
+#    depends_on:
+#      - tempo
+#    volumes:
+#      - ./infra/otel/otel-collector-config-aggregator.yaml:/etc/otel-collector-config.yaml

@@ -1,3 +1,8 @@
+# В этот коллектор sidecar коллектор присылает 100% трейсов
+# И здесь они сэпмлируются по критериям
+# latency или ошибки в трейсах
+
+
 receivers:
   otlp:
     protocols:
@@ -19,15 +24,18 @@ processors:
     timeout: 10s
 
   tail_sampling:
-    decision_wait: 30s # How long to wait for all spans of a trace
+    decision_wait: 10s # How long to wait for all spans of a trace
     num_traces: 1000  # How many traces to keep in memory for sampling
     expected_new_traces_per_sec: 100 # Estimated new traces per second.  Helps allocate memory.
+    decision_cache:
+      sampled_cache_size: 100_000
+      non_sampled_cache_size: 100_000
     policies:
       [
         {
           name: "slow-traces",
           type: latency,
-          latency: { threshold_ms: 500 }
+          latency: { threshold_ms: 300 }
         },
         {
           name: "error-traces",
@@ -58,5 +66,5 @@ service:
   pipelines:
     traces:
       receivers: [otlp]
-      processors: [memory_limiter, batch, tail_sampling]
+      processors: [tail_sampling, memory_limiter, batch]
       exporters: [otlp]

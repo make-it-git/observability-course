@@ -1,3 +1,5 @@
+# В этот коллектор сервис присылает 100% трейсов
+
 receivers:
   otlp:
     protocols:
@@ -14,12 +16,13 @@ connectors:
     # Таким образом при недостатке ресурсов просто добавляем еще инстансов коллектора
     # Более правильный подход - через loadbalancingexporter
     # https://github.com/open-telemetry/opentelemetry-collector-contrib/tree/main/exporter/loadbalancingexporter
+    # Здесь пример с неравномерным распределением на основе prefix для trace_id
     table:
       - context: span
-        condition: 'matches(attributes["trace_id"], "^[a-f].*")'
+        condition: 'IsMatch(span.trace_id.string, "^[a-f].*")' # https://github.com/open-telemetry/opentelemetry-collector-contrib/tree/main/pkg/ottl/contexts/ottlspan
         pipelines: [traces/otlp1]
       - context: span
-        condition: 'matches(attributes["trace_id"], "^[0-9].*")'
+        condition: 'IsMatch(span.trace_id.string, "^[0-9].*")'
         pipelines: [traces/otlp2]
 
 processors:

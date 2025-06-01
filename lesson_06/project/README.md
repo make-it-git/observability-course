@@ -1,14 +1,40 @@
-# OpenTelemetry Collector Core Distro
+### Run
 
-This distribution contains all the components from the [OpenTelemetry Collector](https://github.com/open-telemetry/opentelemetry-collector) repository and a small selection of components tied to open source projects from the [OpenTelemetry Collector Contrib](https://github.com/open-telemetry/opentelemetry-collector-contrib) repository.
+```shell
+docker compose up -d --build --force-recreate 
+```
 
-This distribution is considered "classic" and is no longer accepting new components outside of components from the Core repo.
+### Run simulated load
+```shell
+k6 run k6/load-test.js
+```
 
-## Components
+### Grafana
+```
+http://localhost:3000
+```
 
-The full list of components is available in the [manifest](manifest.yaml)
+### Stop
 
-### Rules for Component Inclusion
+```shell
+docker compose down -v
+```
 
-Since Core is a "classic" distribution its components are strictly limited to what currently exists in its [manifest](manifest.yaml) and any future components in Core.
-No other components from Contrib should be added.
+### Feature toggle
+
+Для создания трейсов, сохраняемых на основе высокого latency, укажите 700/900 (таймаут - 1с)
+
+```shell
+curl -X PUT localhost:8081/api/v1/features/add-point-delay-value-start -d '{"value": 700}' -v
+curl -X PUT localhost:8081/api/v1/features/add-point-delay-value-end -d   '{"value": 900}' -v
+```
+
+Для получения трейсов, сохраняемых на основе ошибок в трейсах, укажите 900/1200 (таймаут - 1с).
+Они включат в себя и трейсы на основе высокого latency.
+
+```shell
+curl -X PUT localhost:8081/api/v1/features/add-point-delay-value-start -d '{"value": 900}' -v
+curl -X PUT localhost:8081/api/v1/features/add-point-delay-value-end -d   '{"value": 1200}' -v
+```
+
+Эти значения указывают искуственную latency, создаваемую в сервисе, в миллисекундах.
