@@ -1,5 +1,5 @@
 global:
-  scrape_interval: 15s
+  scrape_interval: 10s
 
 scrape_configs:
   - job_name: 'driver-location-service'
@@ -40,6 +40,18 @@ scrape_configs:
   - job_name: 'otel-collector'
     static_configs:
       - targets: [ 'otel-collector:8888' ]
+
+  - job_name: 'otel-collector-sidecar'
+    static_configs:
+      - targets: [ 'otel-collector-sidecar:8888' ]
+
+  - job_name: 'otel-collector-aggregator-1'
+    static_configs:
+      - targets: [ 'otel-collector-aggregator-1:8888' ]
+
+  - job_name: 'otel-collector-aggregator-2'
+    static_configs:
+      - targets: [ 'otel-collector-aggregator-2:8888' ]
 
   - job_name: 'otel-collector-app-metrics'
     static_configs:

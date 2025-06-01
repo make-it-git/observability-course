@@ -1,0 +1,62 @@
+receivers:
+  otlp:
+    protocols:
+      grpc:
+        endpoint: 0.0.0.0:4317
+      http:
+        endpoint: 0.0.0.0:4318
+
+processors:
+  memory_limiter:
+    limit_mib: 2048  # 2GB
+    # Sets the amount of memory after which the collector will begin refusing new data
+    spike_limit_mib: 512
+    # Sets the check interval for memory usage
+    check_interval: 1s
+
+  batch:
+    send_batch_size: 1000
+    timeout: 10s
+
+  tail_sampling:
+    decision_wait: 30s # How long to wait for all spans of a trace
+    num_traces: 1000  # How many traces to keep in memory for sampling
+    expected_new_traces_per_sec: 100 # Estimated new traces per second.  Helps allocate memory.
+    policies:
+      [
+        {
+          name: "slow-traces",
+          type: latency,
+          latency: { threshold_ms: 500 }
+        },
+        {
+          name: "error-traces",
+          type: status_code,
+          status_code: { status_codes: [ ERROR ] },
+
+        }
+      ]
+
+exporters:
+  otlp:
+    endpoint: tempo:4317
+    tls:
+      insecure: true
+
+service:
+  telemetry:
+    logs:
+      level: "debug"
+    metrics:
+      level: detailed
+      readers:
+        - pull:
+            exporter:
+              prometheus:
+                host: '0.0.0.0'
+                port: 8888
+  pipelines:
+    traces:
+      receivers: [otlp]
+      processors: [memory_limiter, batch, tail_sampling]
+      exporters: [otlp]

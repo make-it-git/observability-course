@@ -1,47 +1,14 @@
+# OpenTelemetry Collector Core Distro
 
-## Cardinality explorer
+This distribution contains all the components from the [OpenTelemetry Collector](https://github.com/open-telemetry/opentelemetry-collector) repository and a small selection of components tied to open source projects from the [OpenTelemetry Collector Contrib](https://github.com/open-telemetry/opentelemetry-collector-contrib) repository.
 
-```
-http://localhost:8428/vmui/?#/cardinality
-```
+This distribution is considered "classic" and is no longer accepting new components outside of components from the Core repo.
 
-## Trigger deployment from pipeline
+## Components
 
-```shell
-export PORT=2003
-export SERVER=localhost
-echo "deployments.production.service.track-analyzer-service 1 `date +%s`" | nc ${SERVER} ${PORT}
-export current_time=$(date +%s)
-export seconds_ago=$((60 * 40))
-export past_time=$((current_time - seconds_ago))
-echo "deployments.production.service.driver-location-service 1 $past_time" | nc ${SERVER} ${PORT}
-```
+The full list of components is available in the [manifest](manifest.yaml)
 
-## Create fake load
+### Rules for Component Inclusion
 
-```shell
-ab -n 1000000 -c 10 localhost:8080/metrics
-```
-
-## View exemplars
-
-```shell
-curl -H 'Accept: application/openmetrics-text' localhost:8080/metrics | grep http_request_duration_seconds_bucket
-```
-
-## Feature toggles
-
-### Add fake delay to "add point" feature
-
-```shell
-curl -X PUT localhost:8081/api/v1/features/add-point-delay-value-start -d '{"value": 700}' -v
-curl -X PUT localhost:8081/api/v1/features/add-point-delay-value-end -d   '{"value": 900}' -v
-```
-
-
-### Add fake delay to "track analysis" feature
-```shell
-curl -X PUT localhost:8081/api/v1/features/slow-save-track-analysis -d '{"value": true}' -v
-```
-
-
+Since Core is a "classic" distribution its components are strictly limited to what currently exists in its [manifest](manifest.yaml) and any future components in Core.
+No other components from Contrib should be added.
