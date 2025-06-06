@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"log/slog"
 	"os"
+	"strings"
 	"sync"
 	"time"
 )
@@ -18,63 +19,61 @@ func init() {
 	opts := &slog.HandlerOptions{
 		Level: slog.LevelDebug,
 	}
-	var handler slog.Handler = slog.NewJSONHandler(os.Stdout, opts)
+	var handler slog.Handler = slog.NewTextHandler(os.Stdout, opts)
 	logger = slog.New(handler)
 }
 
-// W worker that processes messages from the channel
-func asyncLogWorker() {
+// worker that processes messages from the channel in batches
+func asyncLogBatchWorker() {
 	defer wg.Done()
+	const BATCH_SIZE = 1000
+	builder := strings.Builder{}
+	index := 0
 	for msg := range logChannel {
-		logger.Info(msg)
+		index += 1
+		builder.Write([]byte(msg))
+		if index >= BATCH_SIZE {
+			os.Stdout.Write([]byte(builder.String()))
+			index = 0
+			builder.Reset()
+		}
 	}
 }
 
-func asyncLog(message string) {
+func asyncLogBatch(message string) {
 	select {
 	case logChannel <- message: // Blocking send
 	}
-	//select {
-	//case logChannel <- message: // Non-blocking send
-	//default:
-	//	os.Stderr.Write([]byte("Message lost\n"))
-	//	// Prevent blocking when the channel is full
-	//}
 }
 
 func generateLogMessage(i int) string {
-	return fmt.Sprintf("Logging %d", i)
+	return fmt.Sprintf("Logging %d\n", i)
 }
 
-// Faster
-// time SIMPLE_LOGGING=1 go run main.go > /dev/null
-// SIMPLE_LOGGING=1 go run main.go > /dev/null  2.54s user 1.26s system 101% cpu 3.746 total
+// time SIMPLE_LOGGING=1 go run main.go > simple.log
+// SIMPLE_LOGGING=1 go run main.go > simple.log  1.15s user 4.99s system 100% cpu 6.087 total
+// wc -l simple.log
+// 5000000 simple.log
 
-// Slower
-// time go run main.go > /dev/null
-// go run main.go > /dev/null  5.20s user 3.11s system 173% cpu 4.777 total
+// time go run main.go > async_batch.log
+// go run main.go > async_batch.log  1.15s user 0.66s system 157% cpu 1.151 total
+// wc -l async_batch.log
+// 5000000 async_batch.log
 
-// Faster in case of lost messages
-// time go run main.go > /dev/null 2> /tmp/error.log
-// go run main.go > /dev/null 2> /tmp/error.log  2.51s user 3.19s system 192% cpu 2.965 total
-// grep lost /tmp/error.log | wc -l
-// 1575194
-// 1575194/5000000 = 0.3150388 (31% lost)
 func main() {
-
 	const N = 5_000_000
 	if os.Getenv("SIMPLE_LOGGING") == "1" {
 		os.Stderr.Write([]byte(fmt.Sprintf("Simple started %v\n", time.Now())))
 		for i := 0; i < N; i++ {
-			logger.Info(generateLogMessage(i))
+			os.Stdout.Write([]byte(generateLogMessage(i)))
 		}
 		os.Stderr.Write([]byte(fmt.Sprintf("Simple completed %v\n", time.Now())))
 	} else {
 		os.Stderr.Write([]byte(fmt.Sprintf("Async started %v\n", time.Now())))
 		wg.Add(1)
-		go asyncLogWorker()
+		go asyncLogBatchWorker()
 		for i := 0; i < N; i++ {
-			asyncLog(generateLogMessage(i))
+			asyncLogBatch(generateLogMessage(i))
 		}
 		os.Stderr.Write([]byte(fmt.Sprintf("Async generated all log messages %v\n", time.Now())))
 		close(logChannel)
