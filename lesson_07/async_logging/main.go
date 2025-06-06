@@ -31,15 +31,15 @@ func asyncLogWorker() {
 }
 
 func asyncLog(message string) {
-	select {
-	case logChannel <- message: // Blocking send
-	}
 	//select {
-	//case logChannel <- message: // Non-blocking send
-	//default:
-	//	os.Stderr.Write([]byte("Message lost\n"))
-	//	// Prevent blocking when the channel is full
+	//case logChannel <- message: // Blocking send
 	//}
+	select {
+	case logChannel <- message: // Non-blocking send
+	default:
+		os.Stderr.Write([]byte("Message lost\n"))
+		// Prevent blocking when the channel is full
+	}
 }
 
 func generateLogMessage(i int) string {
@@ -53,6 +53,13 @@ func generateLogMessage(i int) string {
 // Slower
 // time go run main.go > /dev/null
 // go run main.go > /dev/null  5.20s user 3.11s system 173% cpu 4.777 total
+
+// Faster in case of lost messages
+// time go run main.go > /dev/null 2> /tmp/error.log
+// go run main.go > /dev/null 2> /tmp/error.log  2.51s user 3.19s system 192% cpu 2.965 total
+// grep lost /tmp/error.log | wc -l
+// 1575194
+// 1575194/5000000 = 0.3150388 (30%)
 func main() {
 
 	const N = 5_000_000
