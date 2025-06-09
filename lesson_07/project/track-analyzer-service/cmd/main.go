@@ -62,7 +62,7 @@ func main() {
 	slog.SetDefault(logger)
 
 	// Initialize Pyroscope
-	pyroscope.Start(pyroscope.Config{
+	profiler, err := pyroscope.Start(pyroscope.Config{
 		ApplicationName: "track-analyzer-service",
 		ServerAddress:   os.Getenv("PYROSCOPE_SERVER_ADDRESS"),
 		ProfileTypes: []pyroscope.ProfileType{
@@ -72,6 +72,11 @@ func main() {
 			pyroscope.ProfileGoroutines,
 		},
 	})
+	if err != nil {
+		panic(err)
+	}
+	_ = profiler
+	// profiler.Stop()
 
 	tp := initTracer()
 	defer tp.Shutdown(context.Background())

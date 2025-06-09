@@ -16,6 +16,21 @@ services:
       - PYROSCOPE_STORAGE_PATH=/var/lib/pyroscope
       - PYROSCOPE_API_BASEPATH=/
 
+  alloy:
+    container_name: alloy
+    image: grafana/alloy
+    command:
+      - "run"
+      - "--server.http.listen-addr=0.0.0.0:12345"
+      - "/etc/alloy/alloy.config"
+    pid: host # <--
+    privileged: true # <--
+    ports:
+      - "12345:12345"
+    volumes:
+      - ./infra/grafana-alloy/alloy.config:/etc/alloy/alloy.config
+      - /var/run/docker.sock:/var/run/docker.sock
+
   redis_exporter:
     image: oliver006/redis_exporter
     container_name: redis_exporter
