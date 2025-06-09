@@ -6,8 +6,8 @@ import (
 	"os"
 )
 
-// go run main.go | jq
-// ENV=prod go run main.go
+// go run main.go
+// ENV=prod go run main.go | jq
 func main() {
 	opts := &slog.HandlerOptions{
 		Level: slog.LevelDebug,
