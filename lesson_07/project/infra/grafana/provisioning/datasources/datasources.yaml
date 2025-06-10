@@ -41,6 +41,9 @@ datasources:
         enabled: true
       lokiSearch:
         datasourceUid: 'loki'
+      tracesToProfiles:
+        datasourceUid: 'pyroscope'
+        profileTypeId: 'process_cpu:cpu:nanoseconds:cpu:nanoseconds'
 
   - name: Loki
     type: loki

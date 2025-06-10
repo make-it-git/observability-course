@@ -22,7 +22,7 @@ processors:
         value: production
         action: insert
   probabilistic_sampler/traces:
-    sampling_percentage: 5
+    sampling_percentage: 100
   tail_sampling:
   filter:
     error_mode: ignore
