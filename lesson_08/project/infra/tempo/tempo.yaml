@@ -29,13 +29,14 @@ compactor:
 
 metrics_generator:
   registry:
+    collection_interval: 2s
     external_labels:
       source: tempo
       cluster: windmill
   storage:
     path: /var/tempo/generator/wal
     remote_write:
-      - url: http://victoriametrics:8482/api/v1/write
+      - url: http://victoriametrics:8428/api/v1/write
         send_exemplars: true
   traces_storage:
     path: /var/tempo/generator/traces
@@ -51,5 +52,8 @@ storage:
 overrides:
   defaults:
     metrics_generator:
-      processors: [service-graphs, span-metrics, local-blocks]
+      processors:
+        - service-graphs
+        - span-metrics
+        - local-blocks
       generate_native_histograms: both

@@ -3,6 +3,7 @@ package middleware
 import (
 	"github.com/go-chi/chi/v5"
 	"go.opentelemetry.io/otel/attribute"
+	"go.opentelemetry.io/otel/trace"
 	"net/http"
 
 	"go.opentelemetry.io/otel"
@@ -21,7 +22,7 @@ func TracingMiddleware(next http.Handler) http.Handler {
 		}
 
 		// Start a new span
-		ctx, span := otel.Tracer("http").Start(ctx, "http_request")
+		ctx, span := otel.Tracer("http").Start(ctx, "http_request", trace.WithSpanKind(trace.SpanKindServer))
 		span.SetAttributes(
 			attribute.String("http.method", r.Method),
 			attribute.String("http.route", routePattern),
