@@ -1,0 +1,23 @@
+global:
+  smtp_smarthost: 'mailhog:1025'
+  smtp_from: 'alertmanager@example.com'
+  smtp_require_tls: false
+
+route:
+  group_by: ['team']
+  group_wait:      10s
+  group_interval:   1m
+  repeat_interval: 3m
+  receiver: 'email-notifications'
+
+receivers:
+  - name: 'email-notifications'
+    email_configs:
+      - to: 'alerts@example.com'
+
+inhibit_rules:
+  - source_match:
+      severity: 'critical'
+    target_match:
+      severity: 'warning'
+    equal: ['team']

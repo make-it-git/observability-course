@@ -1,0 +1,80 @@
+global:
+  scrape_interval: 10s
+  evaluation_interval: 10s
+
+rule_files:
+  - rules.yml
+  - alerts.yml
+
+alerting:
+  alertmanagers:
+    - static_configs:
+        - targets: ['alertmanager-1:9093', 'alertmanager-2:9093']
+
+scrape_configs:
+  - job_name: 'driver-location-service'
+    static_configs:
+      - targets: ['driver-location-service:8080']
+    relabel_configs:
+      - target_label: instance
+        replacement: 'node-01'
+
+  - job_name: 'track-analyzer-service'
+    static_configs:
+      - targets: ['track-analyzer-service:8080']
+    relabel_configs:
+      - target_label: instance
+        replacement: 'node-01'
+
+  - job_name: 'node-exporter'
+    static_configs:
+      - targets: ['node-exporter:9100']
+    relabel_configs:
+      - target_label: instance
+        replacement: 'node-01'
+
+  - job_name: 'node'
+    static_configs:
+      - targets: ['node-exporter:9100']
+
+  - job_name: 'loki'
+    static_configs:
+      - targets: [ 'loki:3100' ]
+    relabel_configs:
+      - target_label: instance
+        replacement: 'node-01'
+
+  - job_name: 'redis_exporter'
+    static_configs:
+      - targets: [ 'redis_exporter:9121' ]
+    relabel_configs:
+      - target_label: instance
+        replacement: 'node-01'
+
+  - job_name: 'otel-collector'
+    static_configs:
+      - targets: [ 'otel-collector:8888' ]
+
+  - job_name: 'otel-collector-sidecar'
+    static_configs:
+      - targets: [ 'otel-collector-sidecar:8888' ]
+
+  - job_name: 'otel-collector-aggregator-1'
+    static_configs:
+      - targets: [ 'otel-collector-aggregator-1:8888' ]
+
+  - job_name: 'otel-collector-aggregator-2'
+    static_configs:
+      - targets: [ 'otel-collector-aggregator-2:8888' ]
+
+  - job_name: 'otel-collector-app-metrics'
+    static_configs:
+      - targets: [ 'otel-collector:8889' ]
+
+  - job_name: 'alertmanager'
+    static_configs:
+      - targets: [ 'alertmanager-1:9093', 'alertmanager-2:9093' ]
+
+  - job_name: 'grafana'
+    static_configs:
+      - targets: [ 'grafana:3000' ]
