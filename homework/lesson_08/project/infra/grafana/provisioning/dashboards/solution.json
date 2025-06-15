@@ -227,7 +227,7 @@
           },
           "disableTextWrap": false,
           "editorMode": "code",
-          "expr": "abs(avg_over_time(sinusoidal_metric[1m]) - avg_over_time(sinusoidal_metric[1m] offset 5m)) > 0.1",
+          "expr": "abs(stddev_over_time(sinusoidal_metric[1m]) - stddev_over_time(sinusoidal_metric[1m] offset 5m)) > 1",
           "fullMetaSearch": false,
           "hide": false,
           "includeNullMetadata": true,
@@ -363,6 +363,6 @@
   "timezone": "browser",
   "title": "Решение ДЗ",
   "uid": "bep12jgeoncowf",
-  "version": 1,
+  "version": 2,
   "weekStart": ""
 }
