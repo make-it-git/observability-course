@@ -118,7 +118,7 @@
             "uid": "prometheus"
           },
           "editorMode": "code",
-          "expr": "avg_over_time(spike_metric[3m]) > avg_over_time(spike_metric[1m])",
+          "expr": "spike_metric > avg_over_time(spike_metric[1m]) + 0.3 * stddev_over_time(spike_metric[1m])",
           "hide": false,
           "instant": false,
           "legendFormat": "Alert",
@@ -363,6 +363,6 @@
   "timezone": "browser",
   "title": "Решение ДЗ",
   "uid": "bep12jgeoncowf",
-  "version": 2,
+  "version": 4,
   "weekStart": ""
 }
