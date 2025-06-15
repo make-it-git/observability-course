@@ -74,3 +74,7 @@ scrape_configs:
   - job_name: 'alertmanager'
     static_configs:
       - targets: [ 'alertmanager-1:9093', 'alertmanager-2:9093' ]
+
+  - job_name: 'grafana'
+    static_configs:
+      - targets: [ 'grafana:3000' ]
