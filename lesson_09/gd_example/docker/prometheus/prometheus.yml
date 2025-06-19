@@ -1,0 +1,12 @@
+global:
+  scrape_interval: 1s
+  scrape_timeout: 1s
+
+scrape_configs:
+  - job_name: app
+    metrics_path: /metrics
+    scheme: http
+    static_configs:
+      - targets: ['app:8080']
+        labels:
+          service: 'app'
