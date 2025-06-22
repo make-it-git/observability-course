@@ -6,10 +6,10 @@ datasources:
     access: proxy
     url: http://prometheus:9090
     isDefault: true
-  - name: My Alertmanager
+  - name: alertmanager
     type: alertmanager
     access: proxy
     url: http://alertmanager:9093
     jsonData:
       implementation: prometheus
-      handleGrafanaManagedAlerts: true
+      handleGrafanaManagedAlerts: true # Does not work https://github.com/grafana/grafana/issues/98329

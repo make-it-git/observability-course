@@ -1,6 +1,7 @@
 package main
 
 import (
+	"encoding/json"
 	"fmt"
 	"math"
 	"net/http"
@@ -39,16 +40,14 @@ func burnCPU(w http.ResponseWriter, r *http.Request) {
 
 	if atomic.LoadInt32(&cpuConsumingFeatureEnabled) == 1 {
 		x := 1.0
-		for i := 0; i < 1_000_000; i++ {
+		for i := 0; i < 1000; i++ { // x10 more cpu
 			x = math.Sin(math.Cos(math.Tan(math.Atan(x))))
 		}
-		fmt.Println("Time consuming thing")
 	} else {
 		x := 1.0
-		for i := 0; i < 1_000; i++ {
+		for i := 0; i < 100; i++ {
 			x = math.Sin(math.Cos(math.Tan(math.Atan(x))))
 		}
-		fmt.Println("Simple calculations, degraded service quality")
 	}
 
 	duration := time.Since(start).Seconds()
@@ -57,16 +56,29 @@ func burnCPU(w http.ResponseWriter, r *http.Request) {
 	fmt.Fprintln(w, "OK")
 }
 
-func degradeHandler(w http.ResponseWriter, r *http.Request) {
-	atomic.StoreInt32(&cpuConsumingFeatureEnabled, 0)
-	featureFlagEnabled.With(prometheus.Labels{"feature": "cpu_burning_feature"}).Set(0)
-	fmt.Fprintln(w, "Degradation enabled")
+type AlertRequest struct {
+	Status string `json:"status"`
 }
 
-func undegradeHandler(w http.ResponseWriter, r *http.Request) {
-	atomic.StoreInt32(&cpuConsumingFeatureEnabled, 1)
-	featureFlagEnabled.With(prometheus.Labels{"feature": "cpu_burning_feature"}).Set(1)
-	fmt.Fprintln(w, "Degradation disabled")
+func degradeHandler(w http.ResponseWriter, r *http.Request) {
+	var alert AlertRequest
+	err := json.NewDecoder(r.Body).Decode(&alert)
+	if err != nil {
+		w.WriteHeader(http.StatusBadRequest)
+		w.Write([]byte("Bad request"))
+		return
+	}
+	fmt.Println("Status: " + alert.Status)
+	if alert.Status == "firing" {
+		atomic.StoreInt32(&cpuConsumingFeatureEnabled, 0)
+		featureFlagEnabled.With(prometheus.Labels{"feature": "cpu_burning_feature"}).Set(0)
+		fmt.Fprintln(w, "Degradation enabled")
+	} else if alert.Status == "resolved" {
+		atomic.StoreInt32(&cpuConsumingFeatureEnabled, 1)
+		featureFlagEnabled.With(prometheus.Labels{"feature": "cpu_burning_feature"}).Set(1)
+		fmt.Fprintln(w, "Degradation disabled")
+
+	}
 }
 
 func main() {
@@ -74,7 +86,6 @@ func main() {
 
 	http.HandleFunc("/process", burnCPU)
 	http.HandleFunc("/degrade", degradeHandler)
-	http.HandleFunc("/undegrade", undegradeHandler)
 	http.Handle("/metrics", promhttp.Handler())
 
 	fmt.Println("Server listening on port 8080")

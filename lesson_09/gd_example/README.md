@@ -44,3 +44,13 @@ curl -XPOST http://localhost:9093/api/v2/alerts \
     }
   ]'
 ```
+
+## Run artifical load
+
+```shell
+k6 run load.js
+```
+
+## Alertmanager activation
+
+https://github.com/grafana/grafana/issues/98329
