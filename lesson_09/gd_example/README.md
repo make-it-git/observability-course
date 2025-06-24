@@ -16,7 +16,7 @@ curl -XPOST http://localhost:9093/api/v2/alerts \
       },
       "generatorURL": "http://example.com/prometheus/graph",
       "startsAt": "2025-06-19T22:00:00Z",
-      "endsAt": "2025-06-19T22:10:00Z"
+      "endsAt": "2028-06-19T22:10:00Z"
     }
   ]'
 ```
@@ -40,7 +40,7 @@ curl -XPOST http://localhost:9093/api/v2/alerts \
       },
       "generatorURL": "http://example.com/prometheus/graph",
       "startsAt": "2025-06-19T22:00:00Z",
-      "endsAt": "2025-06-19T22:10:00Z"
+      "endsAt": "2028-06-19T22:10:00Z"
     }
   ]'
 ```
