@@ -17,6 +17,8 @@ INTERVAL = 1  # seconds
 now = time.time()
 # Generate points for the past hour
 # Remote write like this does not work for prometheus, but works for victoria
+# https://github.com/VictoriaMetrics/VictoriaMetrics/issues/827
+# Error while inserting data more then 2 days in future.
 for i in range(3600, 0, -1):
     t = now - i
     value = AMPLITUDE * math.sin(2 * math.pi * FREQUENCY * t + PHASE)
