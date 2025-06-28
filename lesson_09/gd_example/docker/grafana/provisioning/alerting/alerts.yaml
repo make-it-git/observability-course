@@ -1,0 +1,68 @@
+apiVersion: 1
+groups:
+  - orgId: 1
+    name: My evaluation group
+    folder: My app
+    interval: 10s
+    rules:
+      - uid: depqlttss7x8gb
+        title: env.prod.service.app.cpu.usage.high
+        condition: C
+        data:
+          - refId: A
+            relativeTimeRange:
+              from: 600
+              to: 0
+            datasourceUid: P1809F7CD0C75ACF3
+            model:
+              disableTextWrap: false
+              editorMode: builder
+              expr: rate(process_cpu_seconds_total{job="app"}[1m])
+              fullMetaSearch: false
+              includeNullMetadata: false
+              instant: true
+              intervalMs: 1000
+              legendFormat: __auto
+              maxDataPoints: 43200
+              range: false
+              refId: A
+              useBackend: false
+          - refId: C
+            relativeTimeRange:
+              from: 600
+              to: 0
+            datasourceUid: __expr__
+            model:
+              conditions:
+                - evaluator:
+                    params:
+                      - 1
+                    type: gt
+                  operator:
+                    type: and
+                  query:
+                    params:
+                      - C
+                  reducer:
+                    params: []
+                    type: last
+                  type: query
+              datasource:
+                type: __expr__
+                uid: __expr__
+              expression: A
+              intervalMs: 1000
+              maxDataPoints: 43200
+              refId: C
+              type: threshold
+        dashboardUid: depql6t2hgt1cb
+        panelId: 1
+        noDataState: NoData
+        execErrState: Error
+        for: 30s
+        annotations:
+          __dashboardUid__: aepqoc8b54gzkc
+          __panelId__: "1"
+        labels:
+          service: app
+        isPaused: false

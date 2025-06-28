@@ -1,0 +1,33 @@
+route:
+  group_by: ['alertname']
+  group_wait: 10s
+  group_interval: 1m
+  repeat_interval: 1h
+  receiver: 'default'
+
+  routes:
+    - match:
+        service: app
+      receiver: 'webhook-app'
+      continue: false # Stop processing routes after this one if it matches
+
+    - match:
+        service: another-app
+      receiver: 'webhook-another-app'
+      continue: false # Stop processing routes after this one if it matches
+
+receivers:
+  - name: 'webhook-app'
+    webhook_configs:
+      - url: 'http://app:8080/degrade'
+        send_resolved: true # Send resolved alerts as well
+
+  - name: 'webhook-another-app'
+    webhook_configs:
+      - url: 'http://webhook:8080/app-webhook'
+        send_resolved: true # Send resolved alerts as well
+
+  - name: 'default'
+    webhook_configs:
+      - url: 'http://webhook:8080/default'
+        send_resolved: true # Send resolved alerts as well

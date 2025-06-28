@@ -1,0 +1,22 @@
+services:
+  grafana:
+    image: grafana/grafana:11.5.0
+    container_name: grafana
+    volumes:
+      - "./docker/grafana/provisioning:/etc/grafana/provisioning"
+    ports:
+      - "3000:3000"
+    environment:
+      - GF_AUTH_ANONYMOUS_ENABLED=true
+      - GF_AUTH_ANONYMOUS_ORG_ROLE=Admin
+      - GF_INSTALL_PLUGINS=victoriametrics-metrics-datasource
+
+  victoria:
+    container_name: victoria
+    image: victoriametrics/victoria-metrics:latest
+    ports:
+      - "8428:8428"
+    command:
+      - "--httpListenAddr=:8428"
+      - "--storageDataPath=/data"
+      - "--retentionPeriod=1d"
