@@ -16,7 +16,7 @@ INTERVAL = 1  # seconds
 
 now = time.time()
 # Generate points for the past hour
-# Does not work for prometheus, but works for victoria
+# Remote write like this does not work for prometheus, but works for victoria
 for i in range(3600, 0, -1):
     t = now - i
     value = AMPLITUDE * math.sin(2 * math.pi * FREQUENCY * t + PHASE)
