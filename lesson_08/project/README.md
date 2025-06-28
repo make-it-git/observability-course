@@ -38,3 +38,10 @@ curl -X PUT localhost:8081/api/v1/features/add-point-delay-value-end -d   '{"val
 ```
 
 Эти значения указывают искуственную latency, создаваемую в сервисе, в миллисекундах.
+
+
+Добавление метрики threshold
+```shell
+while true; do curl -d 'threshold{job="track-analyzer-service", status="200"} 100' -X POST 'http://localhost:8428/api/v1/import/prometheus'; sleep 1; done 
+
+```
