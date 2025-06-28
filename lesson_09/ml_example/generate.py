@@ -19,6 +19,7 @@ now = time.time()
 # Remote write like this does not work for prometheus, but works for victoria
 # https://github.com/VictoriaMetrics/VictoriaMetrics/issues/827
 # Error while inserting data more then 2 days in future.
+count = 1
 for i in range(3600, 0, -1):
     t = now - i
     value = AMPLITUDE * math.sin(2 * math.pi * FREQUENCY * t + PHASE)
@@ -35,3 +36,14 @@ for i in range(3600, 0, -1):
 
     writer.send(data)
     print(f"Sent value {value:.4f} at {datetime.utcfromtimestamp(timestamp_ms / 1000)}")
+
+    data = [
+        {
+            'metric': {'__name__': 'http_request_total', 'job': 'example'},
+            'values': [count],
+            'timestamps': [timestamp_ms]
+        }
+    ]
+    count += 1
+
+    writer.send(data)
