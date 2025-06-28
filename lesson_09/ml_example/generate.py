@@ -1,20 +1,24 @@
 import math
 import time
+from datetime import datetime
 from prometheus_remote_writer import RemoteWriter
 
 # Configure RemoteWriter for your Prometheus instance
 writer = RemoteWriter(
-    url='http://localhost:9090/api/v1/write',
+    url='http://localhost:8428/api/v1/write',
 )
 
 # Sinusoidal parameters
 AMPLITUDE = 1.0
-FREQUENCY = 0.03
+FREQUENCY = 0.003
 PHASE = 0
 INTERVAL = 1  # seconds
 
-while True:
-    t = time.time()
+now = time.time()
+# Generate points for the past hour
+# Does not work for prometheus, but works for victoria
+for i in range(3600, 0, -1):
+    t = now - i
     value = AMPLITUDE * math.sin(2 * math.pi * FREQUENCY * t + PHASE)
     timestamp_ms = int(t * 1000)
 
@@ -28,5 +32,4 @@ while True:
     ]
 
     writer.send(data)
-    print(f"Sent value {value:.4f} at {timestamp_ms}")
-    time.sleep(INTERVAL)
+    print(f"Sent value {value:.4f} at {datetime.utcfromtimestamp(timestamp_ms / 1000)}")

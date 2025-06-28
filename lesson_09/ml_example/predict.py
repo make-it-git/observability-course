@@ -8,12 +8,12 @@ from prometheus_remote_writer import RemoteWriter
 writer = RemoteWriter(
     url='http://localhost:8428/api/v1/write', # write to victoria
 )
-PROM_URL = 'http://localhost:9090'
+PROM_URL = 'http://localhost:8428'
 QUERY = os.environ.get(
     "QUERY", 'http_request_latency'
 )
-LOOKBACK = os.environ.get('LOOKBACK', '15m')
-PREDICT_PERIOD = 5 * 60 # seconds
+LOOKBACK = os.environ.get('LOOKBACK', '1h')
+PREDICT_PERIOD = 3600 # seconds
 METRIC_NAME = 'http_request_latency_forecast'
 
 def query_prometheus(query, lookback):
@@ -62,20 +62,24 @@ def train_prophet_model(df, predict_period):
 
     Args:
         df (pandas.DataFrame): Time series data with 'ds' (datetime) and 'y' (value) columns.
-        predict_period (int): Prediction horizon in hours.
+        predict_period (int): Prediction horizon in seconds.
 
     Returns:
         pandas.DataFrame: Forecasted values with 'ds' (datetime) and 'yhat' (forecast) columns.  Returns empty DataFrame on error.
     """
     try:
-        model = Prophet(interval_width=0.95)
+        model = Prophet()
+        model.add_seasonality(name='minutely', period=1/(24*60) * 10, fourier_order=5, mode='additive')
         model.fit(df)
-        future = model.make_future_dataframe(periods=predict_period, freq="s")  # Predict for the next X minutes
+        # future = model.make_future_dataframe(periods=predict_period, freq="s")  # Predict for the next X seconds
+        future = model.make_future_dataframe(periods=predict_period, freq="s")  # Predict for the next X seconds
         forecast = model.predict(future)
-
         forecast = forecast.tail(predict_period)
-        forecast = forecast[-1:]
         print(forecast)
+        # import os; os._exit(1)
+
+        # forecast = forecast.tail(predict_period)
+        #forecast = forecast[-1:]
 
         return forecast[["ds", "yhat"]]  # Return only the needed columns
     except Exception as e:
@@ -94,35 +98,25 @@ def write_forecast_to_prometheus(forecast, metric_name):
     Args:
         forecast (pandas.DataFrame): Forecasted values with 'ds' (datetime) and 'yhat' (forecast) columns.
         metric_name (str): The name of the metric to store in Prometheus.
-
-    Raises:
-        ValueError: If writer is None and pushgateway is not properly set up.
     """
-    CHUNK_SIZE = 10  # Added constant for chunking
+    CHUNK_SIZE = 1000  # Added constant for chunking
 
     try:
         data = []
         for index, row in forecast.iterrows():
             timestamp = int(row["ds"].timestamp() * 1000)  # Convert to milliseconds
-            ### Dirty hack
-            ### Remote write can not accept values too far in the future
-            ### But only for prometheus, victora works differently
-            # timestamp = timestamp - PREDICT_PERIOD * 5 * 1000
-            # print(timestamp)
             value = row["yhat"]
 
-            # Construct the Prometheus data point in the correct format
             data_point = {
                 "metric": {
-                    "__name__": metric_name,  # Using the passed-in metric_name
-                    "job": "forecast",      # Add any other labels here
+                    "__name__": metric_name,
+                    "job": "forecast", # Add any other labels here
                 },
                 "values": [value],
                 "timestamps": [timestamp],
             }
             data.append(data_point)
 
-        # Send the data in chunks
         for chunk in chunker(data, CHUNK_SIZE):
             try:
                 writer.send(chunk)
@@ -132,36 +126,24 @@ def write_forecast_to_prometheus(forecast, metric_name):
     except Exception as e:
         print(f"Error: Error preparing data for Prometheus: {e}")
 
-
 def main():
-    """
-    Main function to orchestrate the data retrieval, model training, and forecast writing.
-    """
-    print("Starting Prophet forecasting...")
+    try:
+        data = query_prometheus(QUERY, LOOKBACK)
 
-    while True:
-        try:
-            print("Querying Prometheus...")
-            data = query_prometheus(QUERY, LOOKBACK)
+        if not data.empty:
+            print("Training Prophet model...")
+            forecast = train_prophet_model(data, PREDICT_PERIOD)
 
-            if not data.empty:
-                print("Training Prophet model...")
-                forecast = train_prophet_model(data, PREDICT_PERIOD)
-
-                if not forecast.empty:
-                    print("Writing forecast to Prometheus...")
-                    write_forecast_to_prometheus(forecast, METRIC_NAME)
-                else:
-                    print("Skipping writing forecast due to empty forecast data.")
+            if not forecast.empty:
+                print("Writing forecast to Prometheus...")
+                write_forecast_to_prometheus(forecast, METRIC_NAME)
             else:
-                print("Skipping training and writing forecast due to empty data.")
+                print("Skipping writing forecast due to empty forecast data.")
+        else:
+            print("Skipping training and writing forecast due to empty data.")
 
-            print(f"Sleeping ...")
-            time.sleep(1)
-
-        except Exception as e:
-            print(f"An error occurred: {e}")
-            time.sleep(1)
+    except Exception as e:
+        print(f"An error occurred: {e}")
 
 
 if __name__ == "__main__":
