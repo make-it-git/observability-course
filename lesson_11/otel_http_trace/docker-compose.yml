@@ -1,0 +1,18 @@
+# Copyright The OpenTelemetry Authors
+# SPDX-License-Identifier: Apache-2.0
+services:
+  http-server:
+    build:
+      target: example-http-server
+    networks:
+      - example
+  http-client:
+    build:
+      target: example-http-client
+    command: ["/go/bin/client", "-server", "http://http-server:7777/hello"]
+    networks:
+      - example
+    depends_on:
+      - http-server
+networks:
+  example:
