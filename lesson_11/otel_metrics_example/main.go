@@ -90,6 +90,11 @@ func initProvider() *sdkmetric.MeterProvider {
 
 // while true; do curl localhost:2112/hello; done
 // while true; do curl -s localhost:2112/metrics | grep -E '^http_active'; sleep 0.2; done
+//
+// Filtered attributes
+// while true; do curl -s localhost:2112/metrics | grep -E '^http_request_duration_seconds_count'; sleep 0.2; done
+// Unfiltered
+// while true; do curl -s localhost:2112/metrics | grep -E '^http_requests_total'; sleep 0.2; done
 func main() {
 	ctx := context.Background()
 	mp := initProvider()
