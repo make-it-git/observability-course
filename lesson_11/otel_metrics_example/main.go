@@ -48,7 +48,7 @@ func initProvider() *sdkmetric.MeterProvider {
 	mp := sdkmetric.NewMeterProvider(
 		sdkmetric.WithResource(res),
 		sdkmetric.WithReader(exporter),
-		// Здесь можно добавить Views для фильтрации атрибутов или изменения агрегации.
+		// Здесь можно добавить Views для фильтрации атрибутов.
 		// Например, для контроля кардинальности.
 		sdkmetric.WithView(sdkmetric.NewView(
 			sdkmetric.Instrument{Name: "http_request_duration_seconds"},
@@ -110,8 +110,16 @@ func main() {
 	// HTTP handler для имитации работы сервиса.
 	http.HandleFunc("/hello", func(w http.ResponseWriter, r *http.Request) {
 		// Увеличиваем счетчик активных запросов.
-		activeRequests.Add(ctx, 1)
-		defer activeRequests.Add(ctx, -1) // Уменьшаем при выходе из функции.
+		activeRequests.Add(ctx, 1, metric.WithAttributes(
+			attribute.String("path", "/hello"),
+			attribute.String("method", r.Method),
+			attribute.String("status_code", "200"),
+		))
+		defer activeRequests.Add(ctx, -1, metric.WithAttributes(
+			attribute.String("path", "/hello"),
+			attribute.String("method", r.Method),
+			attribute.String("status_code", "200"),
+		)) // Уменьшаем при выходе из функции.
 
 		start := time.Now()
 		// Имитация работы с случайной задержкой.
