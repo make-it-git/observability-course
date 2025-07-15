@@ -1,0 +1,20 @@
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: my-go-app-alerts
+  namespace: monitoring
+  labels:
+    app: my-go-app
+    release: prometheus
+spec:
+  groups:
+    - name: my-go-app-rules
+      rules:
+        - alert: RequestRateLow
+          expr: rate(my_go_app_requests_total[5m]) < 1
+          for: 5m
+          labels:
+            severity: warning
+          annotations:
+            summary: "Low request rate"
+            description: "Request rate to my-go-app is low ({{ $value }} < 1 rps)"
