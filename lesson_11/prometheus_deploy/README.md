@@ -7,7 +7,7 @@ helm repo add prometheus-community https://prometheus-community.github.io/helm-c
 
 helm search repo prometheus-community/kube-prometheus-stack --versions
 
-helm install prometheus prometheus-community/kube-prometheus-stack -f values.yaml --version 70.0.1 --namespace monitoring --create-namespace
+helm install prometheus prometheus-community/kube-prometheus-stack --version 70.0.1 --namespace monitoring --create-namespace
 
 kubectl get pods -n monitoring
 ```
