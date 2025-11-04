@@ -90,14 +90,17 @@ function calculateNewPosition(driver, timeDiff) {
     };
 }
 
-function updateDriverLocation(driverState) {
+function updateDriverLocation(driverState, forceUpdate) {
     const now = Date.now();
     const timeSinceLastUpdate = (now - driverState.lastUpdate) / 1000; // Convert to seconds
     
     // Skip update if not enough time has passed
-    if (timeSinceLastUpdate < UPDATE_INTERVAL) {
-        return;
+    if (!forceUpdate) {
+        if (timeSinceLastUpdate < UPDATE_INTERVAL) {
+            return;
+        }
     }
+
     
     // Calculate new position
     const location = calculateNewPosition(driverState, UPDATE_INTERVAL); // Use fixed interval
@@ -158,7 +161,7 @@ export default function () {
 
     // Try to update all drivers - only those that need updating will be processed
     for (let driverState of driverStates) {
-        updateDriverLocation(driverState);
+        updateDriverLocation(driverState, driverState.id % 15 === 0);
     }
 
     // 20% chance to perform a nearby search

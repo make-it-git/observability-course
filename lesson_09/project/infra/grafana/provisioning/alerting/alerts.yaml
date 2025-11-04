@@ -1,0 +1,269 @@
+apiVersion: 1
+groups:
+  - orgId: 1
+    name: test
+    folder: test
+    interval: 1m
+    rules:
+      - uid: feoyi7w1i7fgga
+        title: Multi alert
+        condition: D
+        data:
+          - refId: A
+            relativeTimeRange:
+              from: 600
+              to: 0
+            datasourceUid: testdata
+            model:
+              alias: latency
+              datasource:
+                type: grafana-testdata-datasource
+                uid: testdata
+              hide: false
+              intervalMs: 1000
+              labels: service=api-$seriesIndex
+              max: 4
+              maxDataPoints: 43200
+              min: 1
+              refId: A
+              scenarioId: random_walk
+              seriesCount: 4
+              startValue: 1
+          - refId: B
+            relativeTimeRange:
+              from: 600
+              to: 0
+            datasourceUid: testdata
+            model:
+              csvContent: |4-
+                   service,value
+                   api-0,1.5
+                   api-1,1.5
+                   api-2,3
+                   api-3,5
+              datasource:
+                type: grafana-testdata-datasource
+                uid: testdata
+              hide: false
+              intervalMs: 1000
+              maxDataPoints: 43200
+              refId: B
+              scenarioId: csv_content
+              seriesCount: 1
+          - refId: C
+            datasourceUid: __expr__
+            model:
+              conditions:
+                - evaluator:
+                    params:
+                      - 0
+                      - 0
+                    type: gt
+                  operator:
+                    type: and
+                  query:
+                    params: []
+                  reducer:
+                    params: []
+                    type: avg
+                  type: query
+              datasource:
+                name: Expression
+                type: __expr__
+                uid: __expr__
+              expression: A
+              hide: false
+              intervalMs: 1000
+              maxDataPoints: 43200
+              reducer: mean
+              refId: C
+              type: reduce
+          - refId: D
+            datasourceUid: __expr__
+            model:
+              conditions:
+                - evaluator:
+                    params:
+                      - 0
+                      - 0
+                    type: gt
+                  operator:
+                    type: and
+                  query:
+                    params: []
+                  reducer:
+                    params: []
+                    type: avg
+                  type: query
+              datasource:
+                name: Expression
+                type: __expr__
+                uid: __expr__
+              expression: $C > $B
+              hide: false
+              intervalMs: 1000
+              maxDataPoints: 43200
+              refId: D
+              type: math
+        noDataState: NoData
+        execErrState: Error
+        for: 1m
+        annotations: {}
+        labels: {}
+        isPaused: false
+        notification_settings:
+          receiver: grafana-default-email
+  - orgId: 1
+    name: every 3 minutes
+    folder: taxi-system
+    interval: 3m
+    rules:
+      - uid: beoxylq2ngc1sf
+        title: Sample alert rule for logs
+        condition: C
+        data:
+          - refId: A
+            queryType: instant
+            relativeTimeRange:
+              from: 600
+              to: 0
+            datasourceUid: loki
+            model:
+              datasource:
+                type: loki
+                uid: loki
+              editorMode: code
+              expr: sum by(driverID) (rate({service_name="driver-location-service"} | json | level = `INFO` | driverID =~ `^1.*` | __error__=`` [1m]))
+              hide: false
+              intervalMs: 1000
+              maxDataPoints: 43200
+              queryType: instant
+              refId: A
+          - refId: B
+            datasourceUid: __expr__
+            model:
+              conditions:
+                - evaluator:
+                    params:
+                      - 0
+                      - 0
+                    type: gt
+                  operator:
+                    type: and
+                  query:
+                    params: []
+                  reducer:
+                    params: []
+                    type: avg
+                  type: query
+              datasource:
+                name: Expression
+                type: __expr__
+                uid: __expr__
+              expression: A
+              hide: false
+              intervalMs: 1000
+              maxDataPoints: 43200
+              reducer: max
+              refId: B
+              settings:
+                mode: dropNN
+              type: reduce
+          - refId: C
+            datasourceUid: __expr__
+            model:
+              conditions:
+                - evaluator:
+                    params:
+                      - 10
+                      - 0
+                    type: gt
+                  operator:
+                    type: and
+                  query:
+                    params: []
+                  reducer:
+                    params: []
+                    type: avg
+                  type: query
+              datasource:
+                name: Expression
+                type: __expr__
+                uid: __expr__
+              expression: B
+              hide: false
+              intervalMs: 1000
+              maxDataPoints: 43200
+              refId: C
+              type: threshold
+        dashboardUid: track-analyzer
+        panelId: 2
+        noDataState: NoData
+        execErrState: Error
+        for: 5m
+        annotations:
+          __dashboardUid__: track-analyzer
+          __panelId__: "2"
+        labels: {}
+        isPaused: false
+        notification_settings:
+          receiver: grafana-default-email
+  - orgId: 1
+    name: every-1m
+    folder: taxi-system
+    interval: 1m
+    rules:
+      - uid: degu78mvabn5sb
+        title: Not enough drivers online (<110)
+        condition: A
+        data:
+          - refId: A
+            relativeTimeRange:
+              from: 600
+              to: 0
+            datasourceUid: victoriametrics
+            model:
+              editorMode: code
+              expr: count by (job) (driver_location_updates_total{job="driver-location-service"}[10m])
+              instant: true
+              intervalMs: 1000
+              legendFormat: __auto
+              maxDataPoints: 43200
+              range: false
+              refId: A
+          - refId: B
+            datasourceUid: __expr__
+            model:
+              conditions:
+                - evaluator:
+                    params:
+                      - 110
+                      - 0
+                    type: lt
+                  operator:
+                    type: and
+                  query:
+                    params: []
+                  reducer:
+                    params: []
+                    type: avg
+                  type: query
+              datasource:
+                name: Expression
+                type: __expr__
+                uid: __expr__
+              expression: A
+              intervalMs: 1000
+              maxDataPoints: 43200
+              refId: B
+              type: threshold
+        dashboardUid: ""
+        panelId: 0
+        noDataState: NoData
+        execErrState: Error
+        for: 1m
+        labels:
+          kind: drivers
+        isPaused: false
+        notification_settings:
+          receiver: grafana-default-email

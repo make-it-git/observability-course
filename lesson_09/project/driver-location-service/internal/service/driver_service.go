@@ -92,7 +92,7 @@ func (s *driverService) sendToTrackAnalyzer(ctx context.Context, point models.Gp
 	defer cancel()
 
 	// Create a new span for the HTTP request
-	ctx, span := otel.Tracer("driver-service").Start(ctx, "sendToTrackAnalyzer")
+	ctx, span := otel.Tracer("driver-service").Start(ctx, "sendToTrackAnalyzer", trace.WithSpanKind(trace.SpanKindClient))
 	defer span.End()
 
 	spanCtx := trace.SpanContextFromContext(ctx)

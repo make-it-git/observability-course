@@ -82,7 +82,6 @@ services:
     volumes:
       - ./infra/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml
       - ./infra/prometheus/rules.yml:/etc/prometheus/rules.yml
-      - ./infra/prometheus/alerts.yml:/etc/prometheus/alerts.yml
 
   graphite:
     container_name: graphite
@@ -228,36 +227,61 @@ services:
     extra_hosts:
       - "host.docker.internal:host-gateway"
 
-  alertmanager-1:
-    image: prom/alertmanager:v0.28.1
-    container_name: alertmanager-1
-    volumes:
-      - ./infra/alertmanager/alertmanager.yml:/etc/alertmanager/alertmanager.yml
-    ports:
-      - "9093:9093"
-    command:
-      - "--config.file=/etc/alertmanager/alertmanager.yml"
-      - "--cluster.listen-address=:9094"  # Different port for gossip
-      - "--cluster.peer=alertmanager-2:9094"
-      - "--log.level=debug"
+  # Далее идет решение для домашнего задания
 
-  alertmanager-2:
-    image: prom/alertmanager:v0.28.1
-    container_name: alertmanager-2
-    volumes:
-      - ./infra/alertmanager/alertmanager.yml:/etc/alertmanager/alertmanager.yml
-    ports:
-      - "9094:9093"
-    command:
-      - "--config.file=/etc/alertmanager/alertmanager.yml"
-      - "--cluster.listen-address=:9094"
-      - "--cluster.peer=alertmanager-1:9094"
-      - "--log.level=debug"
 
-  mailhog:
-    image: mailhog/mailhog:latest
-    container_name: mailhog
-    ports:
-      - "8025:8025" # Web UI
-    environment:
-      - MH_STORAGE=memory
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+#  otel-collector-sidecar:
+#    container_name: otel-collector-sidecar
+#    image: otel/opentelemetry-collector-contrib
+#    command: [ "--config=/etc/otel-collector-config.yaml" ]
+#    depends_on:
+#      - tempo
+#      - otel-collector-aggregator-1
+#      - otel-collector-aggregator-2
+#    volumes:
+#      - ./infra/otel/otel-collector-config-sidecar.yaml:/etc/otel-collector-config.yaml
+#
+#  otel-collector-aggregator-1:
+#    container_name: otel-collector-aggregator-1
+#    image: otel/opentelemetry-collector-contrib
+#    command: [ "--config=/etc/otel-collector-config.yaml" ]
+#    depends_on:
+#      - tempo
+#    volumes:
+#      - ./infra/otel/otel-collector-config-aggregator.yaml:/etc/otel-collector-config.yaml
+#  otel-collector-aggregator-2:
+#    container_name: otel-collector-aggregator-2
+#    image: otel/opentelemetry-collector-contrib
+#    command: [ "--config=/etc/otel-collector-config.yaml" ]
+#    depends_on:
+#      - tempo
+#    volumes:
+#      - ./infra/otel/otel-collector-config-aggregator.yaml:/etc/otel-collector-config.yaml

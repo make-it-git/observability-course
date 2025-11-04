@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"log/slog"
+	"math"
 	"math/rand"
 	"net/http"
 	"strconv"
@@ -129,9 +130,14 @@ func (h *TrackHandler) randomWait(ctx context.Context, logger *slog.Logger) {
 	min := h.featureService.GetIntFeature(ctx, "add-point-delay-value-start", 0)
 	max := h.featureService.GetIntFeature(ctx, "add-point-delay-value-end", 0)
 
+	s := 0.0
 	if min > 0 && max > 0 && max > min {
 		randomValue := min + h.random.Intn(max-min+1)
 		logger.Info("Random sleep", "value", randomValue)
 		time.Sleep(time.Millisecond * time.Duration(randomValue))
+		for i := 0; i < 10_000_000; i++ {
+			s = math.Max(float64(i), 100) // generate cpu load
+		}
 	}
+	_ = s
 }

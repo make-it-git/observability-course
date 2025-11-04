@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"github.com/grafana/pyroscope-go"
 	"log/slog"
 	"net/http"
 	"os"
@@ -11,10 +12,14 @@ import (
 
 	"github.com/prometheus/client_golang/prometheus"
 
+	"example/track-analyzer-service/internal/handlers"
+	internalMiddleware "example/track-analyzer-service/internal/middleware"
+	"example/track-analyzer-service/internal/repository"
+	"example/track-analyzer-service/internal/service"
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
 	"github.com/go-redis/redis/v8"
-	"github.com/grafana/pyroscope-go"
+	otelpyroscope "github.com/grafana/otel-profiling-go"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/exporters/otlp/otlptrace/otlptracegrpc"
@@ -22,11 +27,6 @@ import (
 	"go.opentelemetry.io/otel/sdk/resource"
 	sdktrace "go.opentelemetry.io/otel/sdk/trace"
 	semconv "go.opentelemetry.io/otel/semconv/v1.4.0"
-
-	"example/track-analyzer-service/internal/handlers"
-	internalMiddleware "example/track-analyzer-service/internal/middleware"
-	"example/track-analyzer-service/internal/repository"
-	"example/track-analyzer-service/internal/service"
 )
 
 func initTracer() *sdktrace.TracerProvider {
@@ -43,7 +43,7 @@ func initTracer() *sdktrace.TracerProvider {
 			semconv.ServiceNameKey.String("track-analyzer-service"),
 		)),
 	)
-	otel.SetTracerProvider(tp)
+	otel.SetTracerProvider(otelpyroscope.NewTracerProvider(tp))
 
 	// Configure the W3C trace context propagator
 	otel.SetTextMapPropagator(propagation.NewCompositeTextMapPropagator(
@@ -61,8 +61,11 @@ func main() {
 	}))
 	slog.SetDefault(logger)
 
+	tp := initTracer()
+	defer tp.Shutdown(context.Background())
+
 	// Initialize Pyroscope
-	pyroscope.Start(pyroscope.Config{
+	profiler, err := pyroscope.Start(pyroscope.Config{
 		ApplicationName: "track-analyzer-service",
 		ServerAddress:   os.Getenv("PYROSCOPE_SERVER_ADDRESS"),
 		ProfileTypes: []pyroscope.ProfileType{
@@ -72,9 +75,11 @@ func main() {
 			pyroscope.ProfileGoroutines,
 		},
 	})
-
-	tp := initTracer()
-	defer tp.Shutdown(context.Background())
+	if err != nil {
+		panic(err)
+	}
+	_ = profiler
+	// profiler.Stop()
 
 	redisClient := redis.NewClient(&redis.Options{
 		Addr: os.Getenv("REDIS_ADDR"),
