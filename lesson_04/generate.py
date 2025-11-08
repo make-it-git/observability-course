@@ -119,6 +119,43 @@ def is_missing_scrape(i):
         return True
     return False
 
+def send_latency_histogram(timestamp_ms, labels, multiplier):
+    # Simulated latencies in seconds (e.g. API response times)
+    simulated_latencies = [random.expovariate(2 * multiplier) for _ in range(100)]
+
+    # Define Prometheus histogram buckets
+    buckets = [0.1, 0.3, 0.5, 1.0, 2.5, 5.0] # seconds
+
+    counts = []
+    for b in buckets:
+        count_in_bucket = len([v for v in simulated_latencies if v <= b])
+        cumulative = count_in_bucket
+        counts.append((b, cumulative))
+
+    total_count = len(simulated_latencies)
+    total_sum = sum(simulated_latencies)
+
+    # Send histogram bucket metrics
+    for b, cumulative in counts:
+        send(
+            "http_request_duration_seconds_bucket",
+            cumulative,
+            timestamp_ms,
+            {**labels, "le": str(b)},
+        )
+
+    # Send +Inf bucket (always total count)
+    send(
+        "http_request_duration_seconds_bucket",
+        total_count,
+        timestamp_ms,
+        {**labels, "le": "+Inf"},
+    )
+
+    # Send sum and count
+    send("http_request_duration_seconds_sum", total_sum, timestamp_ms, labels)
+    send("http_request_duration_seconds_count", total_count, timestamp_ms, labels)
+
 def send(name, value, timestamp_ms, labels):
     data = [
         {
@@ -139,8 +176,16 @@ for i in range(total, 0, -1):
     t = now - i
     timestamp_ms = int(t * 1000)
 
+    send_latency_histogram(timestamp_ms, {'job': 'example', 'instance': 'node-01'}, 1)
+    send_latency_histogram(timestamp_ms, {'job': 'example', 'instance': 'node-02'}, 1.2)
+    send_latency_histogram(timestamp_ms, {'job': 'example', 'instance': 'node-03'}, 1.5)
+    send_latency_histogram(timestamp_ms, {'job': 'example', 'instance': 'node-04'}, 2)
+
     send('sinusoidal_metric', sinusoidal(t), timestamp_ms, {'job': 'example', 'instance': 'node-01'})
     send('sinusoidal_metric', sinusoidal(t) * 0.7, timestamp_ms, {'job': 'example', 'instance': 'node-02'})
+    send('sinusoidal_metric', sinusoidal(t) * 0.5, timestamp_ms, {'job': 'example', 'instance': 'node-03'})
+    send('sinusoidal_metric', sinusoidal(t) * 0.3, timestamp_ms, {'job': 'example', 'instance': 'node-04'})
+    send('sinusoidal_metric', sinusoidal(t) * 0.1, timestamp_ms, {'job': 'example', 'instance': 'node-05'})
 
     send('increasing_counter_metric', count, timestamp_ms, {'job': 'example', 'instance': 'node-01'})
     send('increasing_counter_metric', count, timestamp_ms, {'job': 'example', 'instance': 'node-02'})
