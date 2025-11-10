@@ -36,7 +36,7 @@ def slowly_increasing_value(i):
     Slowly Increasing (Burnout / Memory Leak Pattern)
     Simulates gradual buildup — e.g., memory leaks, open connections, queue depth.
     """
-    burn_rate = 0.0003  # how quickly it increases
+    burn_rate = 0.000003  # how quickly it increases
     base_value = 50
     value = base_value + burn_rate * (3600 - i)**2  # quadratic slow increase
     return value
@@ -65,7 +65,7 @@ def exponential_growth(i):
     Simulates uncontrolled resource consumption (e.g. runaway threads, log volume, cardinality explosion).
     Grows faster over time - useful for testing alert thresholds and storage overflow.
     """
-    return 10 * math.exp(0.0005 * (3600 - i))
+    return 10 * math.exp(0.003 * i)
 
 def gradual_decay(i):
     """
