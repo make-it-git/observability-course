@@ -65,7 +65,7 @@ def exponential_growth(i):
     Simulates uncontrolled resource consumption (e.g. runaway threads, log volume, cardinality explosion).
     Grows faster over time - useful for testing alert thresholds and storage overflow.
     """
-    return 10 * math.exp(0.003 * i)
+    return 10 * math.exp(0.003 * (3600 - i))
 
 def gradual_decay(i):
     """
