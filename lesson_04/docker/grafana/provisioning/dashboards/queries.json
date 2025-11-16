@@ -319,7 +319,7 @@
         "type": "prometheus",
         "uid": "P1809F7CD0C75ACF3"
       },
-      "description": "например, instance отвалился, из-за сетевых проблем, counter прекращает расти.",
+      "description": "",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -381,7 +381,7 @@
         "x": 12,
         "y": 8
       },
-      "id": 4,
+      "id": 13,
       "options": {
         "legend": {
           "calcs": [],
@@ -403,13 +403,13 @@
             "uid": "P1809F7CD0C75ACF3"
           },
           "editorMode": "code",
-          "expr": "absent(missing_scrape_counter_metric)",
-          "legendFormat": "__auto",
+          "expr": "topk(2, avg_over_time(sinusoidal_metric[1m]))",
+          "legendFormat": "top avg_over_time {{instance}}",
           "range": true,
           "refId": "A"
         }
       ],
-      "title": "Пропуск скрейпов",
+      "title": "Top тяжелых",
       "type": "timeseries"
     },
     {
@@ -552,7 +552,7 @@
         "type": "prometheus",
         "uid": "P1809F7CD0C75ACF3"
       },
-      "description": "Поиск аномальных спайков нагрузки, ошибок или задержек, например:\n- резкий всплеск CPU,\n- burst трафика,\n- короткие пики latency, приводящие к деградации.",
+      "description": "например, instance отвалился, из-за сетевых проблем, counter прекращает расти.",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -606,33 +606,7 @@
             ]
           }
         },
-        "overrides": [
-          {
-            "__systemRef": "hideSeriesFrom",
-            "matcher": {
-              "id": "byNames",
-              "options": {
-                "mode": "exclude",
-                "names": [
-                  "original metric node-01",
-                  "stddev node-01"
-                ],
-                "prefix": "All except:",
-                "readOnly": true
-              }
-            },
-            "properties": [
-              {
-                "id": "custom.hideFrom",
-                "value": {
-                  "legend": false,
-                  "tooltip": false,
-                  "viz": true
-                }
-              }
-            ]
-          }
-        ]
+        "overrides": []
       },
       "gridPos": {
         "h": 8,
@@ -640,7 +614,7 @@
         "x": 12,
         "y": 16
       },
-      "id": 6,
+      "id": 4,
       "options": {
         "legend": {
           "calcs": [],
@@ -661,29 +635,14 @@
             "type": "prometheus",
             "uid": "P1809F7CD0C75ACF3"
           },
-          "disableTextWrap": false,
-          "editorMode": "builder",
-          "expr": "stddev_over_time(step_changes_metric[4s])",
-          "fullMetaSearch": false,
-          "includeNullMetadata": true,
-          "legendFormat": "stddev {{instance}}",
-          "range": true,
-          "refId": "A",
-          "useBackend": false
-        },
-        {
-          "datasource": {
-            "type": "prometheus",
-            "uid": "P1809F7CD0C75ACF3"
-          },
           "editorMode": "code",
-          "expr": "step_changes_metric",
-          "legendFormat": "original metric {{instance}}",
+          "expr": "absent(missing_scrape_counter_metric)",
+          "legendFormat": "__auto",
           "range": true,
-          "refId": "B"
+          "refId": "A"
         }
       ],
-      "title": "Standart deviation (memory usage)",
+      "title": "Пропуск скрейпов",
       "type": "timeseries"
     },
     {
@@ -828,7 +787,7 @@
         "type": "prometheus",
         "uid": "P1809F7CD0C75ACF3"
       },
-      "description": "* очередь задач, которую периодически очищают\n* temp файлы/кэши, которые периодически чистятся",
+      "description": "Поиск аномальных спайков нагрузки, ошибок или задержек, например:\n- резкий всплеск CPU,\n- burst трафика,\n- короткие пики latency, приводящие к деградации.",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -882,7 +841,33 @@
             ]
           }
         },
-        "overrides": []
+        "overrides": [
+          {
+            "__systemRef": "hideSeriesFrom",
+            "matcher": {
+              "id": "byNames",
+              "options": {
+                "mode": "exclude",
+                "names": [
+                  "original metric node-01",
+                  "stddev node-01"
+                ],
+                "prefix": "All except:",
+                "readOnly": true
+              }
+            },
+            "properties": [
+              {
+                "id": "custom.hideFrom",
+                "value": {
+                  "legend": false,
+                  "tooltip": false,
+                  "viz": true
+                }
+              }
+            ]
+          }
+        ]
       },
       "gridPos": {
         "h": 8,
@@ -890,7 +875,7 @@
         "x": 12,
         "y": 24
       },
-      "id": 8,
+      "id": 6,
       "options": {
         "legend": {
           "calcs": [],
@@ -912,11 +897,11 @@
             "uid": "P1809F7CD0C75ACF3"
           },
           "disableTextWrap": false,
-          "editorMode": "code",
-          "expr": "(deriv(periodic_reset_metric[3m]) > 1) * avg_over_time(periodic_reset_metric[3m])",
+          "editorMode": "builder",
+          "expr": "stddev_over_time(step_changes_metric[4s])",
           "fullMetaSearch": false,
           "includeNullMetadata": true,
-          "legendFormat": "reset {{instance}}",
+          "legendFormat": "stddev {{instance}}",
           "range": true,
           "refId": "A",
           "useBackend": false
@@ -927,15 +912,13 @@
             "uid": "P1809F7CD0C75ACF3"
           },
           "editorMode": "code",
-          "expr": "periodic_reset_metric",
-          "hide": false,
-          "instant": false,
-          "legendFormat": "original {{instance}}",
+          "expr": "step_changes_metric",
+          "legendFormat": "original metric {{instance}}",
           "range": true,
           "refId": "B"
         }
       ],
-      "title": "Обнаружение reset метрик",
+      "title": "Standart deviation (memory usage)",
       "type": "timeseries"
     },
     {
@@ -1051,10 +1034,10 @@
     },
     {
       "datasource": {
-        "type": "victoriametrics-metrics-datasource",
-        "uid": "P4169E866C3094E38"
+        "type": "prometheus",
+        "uid": "P1809F7CD0C75ACF3"
       },
-      "description": "Например, быстрый рост memory usage",
+      "description": "* очередь задач, которую периодически очищают\n* temp файлы/кэши, которые периодически чистятся",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -1116,7 +1099,7 @@
         "x": 12,
         "y": 32
       },
-      "id": 10,
+      "id": 8,
       "options": {
         "legend": {
           "calcs": [],
@@ -1134,30 +1117,34 @@
       "targets": [
         {
           "datasource": {
-            "type": "victoriametrics-metrics-datasource",
-            "uid": "P4169E866C3094E38"
+            "type": "prometheus",
+            "uid": "P1809F7CD0C75ACF3"
           },
+          "disableTextWrap": false,
           "editorMode": "code",
-          "expr": "deriv(exponential_growth_metric[1m])",
-          "format": "time_series",
-          "legendFormat": "deriv {{instance}}",
+          "expr": "(deriv(periodic_reset_metric[3m]) > 1) * avg_over_time(periodic_reset_metric[3m])",
+          "fullMetaSearch": false,
+          "includeNullMetadata": true,
+          "legendFormat": "reset {{instance}}",
           "range": true,
-          "refId": "A"
+          "refId": "A",
+          "useBackend": false
         },
         {
           "datasource": {
-            "type": "victoriametrics-metrics-datasource",
-            "uid": "P4169E866C3094E38"
+            "type": "prometheus",
+            "uid": "P1809F7CD0C75ACF3"
           },
           "editorMode": "code",
-          "expr": "exponential_growth_metric",
-          "format": "time_series",
+          "expr": "periodic_reset_metric",
+          "hide": false,
+          "instant": false,
           "legendFormat": "original {{instance}}",
           "range": true,
           "refId": "B"
         }
       ],
-      "title": "Экспоненциальный рост",
+      "title": "Обнаружение reset метрик",
       "type": "timeseries"
     },
     {
@@ -1302,7 +1289,7 @@
         "type": "victoriametrics-metrics-datasource",
         "uid": "P4169E866C3094E38"
       },
-      "description": "Например, сработал автоскейлинг.",
+      "description": "Например, быстрый рост memory usage",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -1364,6 +1351,117 @@
         "x": 12,
         "y": 40
       },
+      "id": 10,
+      "options": {
+        "legend": {
+          "calcs": [],
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "hideZeros": false,
+          "mode": "single",
+          "sort": "none"
+        }
+      },
+      "pluginVersion": "11.5.0",
+      "targets": [
+        {
+          "datasource": {
+            "type": "victoriametrics-metrics-datasource",
+            "uid": "P4169E866C3094E38"
+          },
+          "editorMode": "code",
+          "expr": "deriv(exponential_growth_metric[1m])",
+          "format": "time_series",
+          "legendFormat": "deriv {{instance}}",
+          "range": true,
+          "refId": "A"
+        },
+        {
+          "datasource": {
+            "type": "victoriametrics-metrics-datasource",
+            "uid": "P4169E866C3094E38"
+          },
+          "editorMode": "code",
+          "expr": "exponential_growth_metric",
+          "format": "time_series",
+          "legendFormat": "original {{instance}}",
+          "range": true,
+          "refId": "B"
+        }
+      ],
+      "title": "Экспоненциальный рост",
+      "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "type": "victoriametrics-metrics-datasource",
+        "uid": "P4169E866C3094E38"
+      },
+      "description": "Например, сработал автоскейлинг.",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisBorderShow": false,
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "barAlignment": 0,
+            "barWidthFactor": 0.6,
+            "drawStyle": "line",
+            "fillOpacity": 0,
+            "gradientMode": "none",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "insertNulls": false,
+            "lineInterpolation": "linear",
+            "lineWidth": 1,
+            "pointSize": 5,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "showPoints": "auto",
+            "spanNulls": false,
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 0,
+        "y": 48
+      },
       "id": 12,
       "options": {
         "legend": {
@@ -1407,6 +1505,117 @@
       ],
       "title": "Резкие изменения метрики",
       "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "P1809F7CD0C75ACF3"
+      },
+      "description": "",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisBorderShow": false,
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "barAlignment": 0,
+            "barWidthFactor": 0.6,
+            "drawStyle": "line",
+            "fillOpacity": 0,
+            "gradientMode": "none",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "insertNulls": false,
+            "lineInterpolation": "linear",
+            "lineWidth": 1,
+            "pointSize": 5,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "showPoints": "auto",
+            "spanNulls": false,
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 12,
+        "y": 48
+      },
+      "id": 14,
+      "options": {
+        "legend": {
+          "calcs": [],
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "hideZeros": false,
+          "mode": "single",
+          "sort": "none"
+        }
+      },
+      "pluginVersion": "11.5.0",
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "P1809F7CD0C75ACF3"
+          },
+          "editorMode": "code",
+          "expr": "((time() - timestamp(missing_scrape_counter_metric)) > bool 120)",
+          "legendFormat": "missing scrape",
+          "range": true,
+          "refId": "A"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "P1809F7CD0C75ACF3"
+          },
+          "editorMode": "code",
+          "expr": "rate(missing_scrape_counter_metric[1m])",
+          "hide": false,
+          "instant": false,
+          "legendFormat": "missing_scrape_counter_metric",
+          "range": true,
+          "refId": "B"
+        }
+      ],
+      "title": "Пропал скрейп",
+      "type": "timeseries"
     }
   ],
   "preload": false,
@@ -1417,8 +1626,8 @@
     "list": []
   },
   "time": {
-    "from": "now-2h",
-    "to": "now+10m"
+    "from": "now-3h",
+    "to": "now"
   },
   "timepicker": {},
   "timezone": "browser",
