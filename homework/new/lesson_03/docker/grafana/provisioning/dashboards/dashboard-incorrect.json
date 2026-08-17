@@ -364,6 +364,6 @@
   "timezone": "browser",
   "title": "Checkout Service - Latency & Errors (Неправильный, его нужно поправить)",
   "uid": "checkout-service-dashboard-wrong",
-  "version": 2,
+  "version": 1,
   "weekStart": ""
 }

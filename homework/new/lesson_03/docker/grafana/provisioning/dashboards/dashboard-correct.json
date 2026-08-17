@@ -141,6 +141,7 @@
     },
     {
       "datasource": {
+        "default": false,
         "type": "prometheus",
         "uid": "${DS_PROMETHEUS}"
       },
@@ -226,8 +227,8 @@
             "uid": "${DS_PROMETHEUS}"
           },
           "editorMode": "code",
-          "expr": "sum(rate(http_request_duration_seconds_count{status=~\"5.*\"}[1m])) / sum(rate(http_request_duration_seconds_count[1m]))",
-          "legendFormat": "Error Rate (5xx)",
+          "expr": "sum by (path) (rate(http_request_duration_seconds_count{status=~\"5..\"}[5m]))\n/\nsum by (path) (rate(http_request_duration_seconds_count[5m]))",
+          "legendFormat": "Error Rate (5xx) - {{path}}",
           "range": true,
           "refId": "A"
         }
@@ -454,6 +455,6 @@
   "timezone": "browser",
   "title": "Checkout Service - Latency & Errors (Решение)",
   "uid": "checkout-service-dashboard",
-  "version": 1,
+  "version": 2,
   "weekStart": ""
 }
