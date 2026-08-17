@@ -454,6 +454,6 @@
   "timezone": "browser",
   "title": "Checkout Service - Latency & Errors (Решение)",
   "uid": "checkout-service-dashboard",
-  "version": 3,
+  "version": 1,
   "weekStart": ""
 }
