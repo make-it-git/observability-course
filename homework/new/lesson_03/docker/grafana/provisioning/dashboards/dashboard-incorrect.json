@@ -228,7 +228,7 @@
           },
           "editorMode": "code",
           "expr": "sum by (path) (rate(http_request_duration_seconds_count{status=~\"5..\"}[5m]))\n/\nsum by (path) (rate(http_request_duration_seconds_count[5m]))",
-          "legendFormat": "Error Rate (5xx)",
+          "legendFormat": "Error Rate (5xx) - {{path}}",
           "range": true,
           "refId": "A"
         }
@@ -364,6 +364,6 @@
   "timezone": "browser",
   "title": "Checkout Service - Latency & Errors (Неправильный, его нужно поправить)",
   "uid": "checkout-service-dashboard-wrong",
-  "version": 1,
+  "version": 2,
   "weekStart": ""
 }
