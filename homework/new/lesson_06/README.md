@@ -8,7 +8,7 @@
 
 ### Задача
 
-Проект находится в репозитории: [https://github.com/make-it-git/observability-course/tree/main/homework/new/lesson_07/project](https://github.com/make-it-git/observability-course/tree/main/homework/new/lesson_07/project)
+Проект находится в репозитории: [https://github.com/make-it-git/observability-course/tree/main/homework/new/lesson_06/project](https://github.com/make-it-git/observability-course/tree/main/homework/new/lesson_06/project)
 
 На занятии вы познакомились с проектом, состоящим из 2-х сервисов:
 
