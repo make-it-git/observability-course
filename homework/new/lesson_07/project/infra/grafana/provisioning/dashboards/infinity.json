@@ -1,0 +1,387 @@
+{
+  "annotations": {
+    "list": [
+      {
+        "builtIn": 1,
+        "datasource": {
+          "type": "grafana",
+          "uid": "-- Grafana --"
+        },
+        "enable": true,
+        "hide": true,
+        "iconColor": "rgba(0, 211, 255, 1)",
+        "name": "Annotations & Alerts",
+        "type": "dashboard"
+      }
+    ]
+  },
+  "editable": true,
+  "fiscalYearStartMonth": 0,
+  "graphTooltip": 0,
+  "id": 5,
+  "links": [],
+  "panels": [
+    {
+      "datasource": {
+        "type": "yesoreyeram-infinity-datasource",
+        "uid": "infinity"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "custom": {
+            "align": "auto",
+            "cellOptions": {
+              "type": "auto"
+            },
+            "inspect": false
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              }
+            ]
+          }
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "thumbnail"
+            },
+            "properties": [
+              {
+                "id": "links",
+                "value": [
+                  {
+                    "targetBlank": true,
+                    "title": "Open",
+                    "url": "${__value.raw}"
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      "gridPos": {
+        "h": 13,
+        "w": 24,
+        "x": 0,
+        "y": 0
+      },
+      "id": 1,
+      "options": {
+        "cellHeight": "sm",
+        "footer": {
+          "countRows": false,
+          "fields": "",
+          "reducer": [
+            "sum"
+          ],
+          "show": false
+        },
+        "showHeader": true
+      },
+      "pluginVersion": "11.5.2",
+      "targets": [
+        {
+          "columns": [],
+          "datasource": {
+            "type": "yesoreyeram-infinity-datasource",
+            "uid": "infinity"
+          },
+          "filters": [],
+          "format": "table",
+          "global_query_id": "",
+          "refId": "A",
+          "root_selector": "",
+          "source": "url",
+          "type": "json",
+          "url": "https://dummyjson.com/products",
+          "url_options": {
+            "data": "",
+            "method": "GET"
+          }
+        }
+      ],
+      "title": "Products",
+      "transformations": [
+        {
+          "id": "extractFields",
+          "options": {
+            "delimiter": ",",
+            "format": "json",
+            "jsonPaths": [
+              {
+                "path": "createdAt"
+              }
+            ],
+            "keepTime": false,
+            "replace": false,
+            "source": "meta"
+          }
+        },
+        {
+          "id": "organize",
+          "options": {
+            "excludeByName": {
+              "brand": true,
+              "category": true,
+              "description": true,
+              "dimensions": true,
+              "discountPercentage": true,
+              "images": true,
+              "meta": true,
+              "minimumOrderQuantity": true,
+              "rating": true,
+              "returnPolicy": true,
+              "reviews": true,
+              "shippingInformation": true,
+              "sku": true,
+              "stock": true,
+              "tags": true,
+              "title": true,
+              "warrantyInformation": true,
+              "weight": true
+            },
+            "includeByName": {},
+            "indexByName": {
+              "availabilityStatus": 7,
+              "brand": 0,
+              "category": 1,
+              "createdAt": 22,
+              "description": 2,
+              "dimensions": 3,
+              "discountPercentage": 4,
+              "id": 5,
+              "images": 6,
+              "meta": 8,
+              "minimumOrderQuantity": 9,
+              "price": 10,
+              "rating": 11,
+              "returnPolicy": 12,
+              "reviews": 13,
+              "shippingInformation": 14,
+              "sku": 15,
+              "stock": 16,
+              "tags": 17,
+              "thumbnail": 18,
+              "title": 19,
+              "warrantyInformation": 20,
+              "weight": 21
+            },
+            "renameByName": {}
+          }
+        }
+      ],
+      "type": "table"
+    },
+    {
+      "datasource": {
+        "type": "datasource",
+        "uid": "-- Mixed --"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            }
+          },
+          "mappings": []
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "thumbnail"
+            },
+            "properties": [
+              {
+                "id": "links",
+                "value": [
+                  {
+                    "targetBlank": true,
+                    "title": "Open",
+                    "url": "${__value.raw}"
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      "gridPos": {
+        "h": 13,
+        "w": 24,
+        "x": 0,
+        "y": 13
+      },
+      "id": 2,
+      "options": {
+        "displayLabels": [
+          "percent"
+        ],
+        "legend": {
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "pieType": "pie",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": true
+        },
+        "tooltip": {
+          "hideZeros": false,
+          "mode": "single",
+          "sort": "none"
+        }
+      },
+      "pluginVersion": "11.5.2",
+      "targets": [
+        {
+          "columns": [],
+          "datasource": {
+            "type": "yesoreyeram-infinity-datasource",
+            "uid": "infinity"
+          },
+          "filters": [],
+          "format": "table",
+          "global_query_id": "",
+          "refId": "A",
+          "root_selector": "",
+          "source": "url",
+          "type": "json",
+          "url": "https://dummyjson.com/products",
+          "url_options": {
+            "data": "",
+            "method": "GET"
+          }
+        },
+        {
+          "datasource": {
+            "type": "datasource",
+            "uid": "-- Dashboard --"
+          },
+          "hide": false,
+          "refId": "B"
+        }
+      ],
+      "title": "Products by stock status",
+      "transformations": [
+        {
+          "id": "organize",
+          "options": {
+            "excludeByName": {
+              "brand": true,
+              "category": true,
+              "description": true,
+              "dimensions": true,
+              "discountPercentage": true,
+              "id": false,
+              "images": true,
+              "meta": true,
+              "minimumOrderQuantity": true,
+              "price": true,
+              "rating": true,
+              "returnPolicy": true,
+              "reviews": true,
+              "shippingInformation": true,
+              "sku": true,
+              "stock": true,
+              "tags": true,
+              "thumbnail": true,
+              "title": true,
+              "warrantyInformation": true,
+              "weight": true
+            },
+            "includeByName": {},
+            "indexByName": {
+              "availabilityStatus": 7,
+              "brand": 0,
+              "category": 1,
+              "createdAt": 22,
+              "description": 2,
+              "dimensions": 3,
+              "discountPercentage": 4,
+              "id": 5,
+              "images": 6,
+              "meta": 8,
+              "minimumOrderQuantity": 9,
+              "price": 10,
+              "rating": 11,
+              "returnPolicy": 12,
+              "reviews": 13,
+              "shippingInformation": 14,
+              "sku": 15,
+              "stock": 16,
+              "tags": 17,
+              "thumbnail": 18,
+              "title": 19,
+              "warrantyInformation": 20,
+              "weight": 21
+            },
+            "renameByName": {}
+          }
+        },
+        {
+          "id": "groupBy",
+          "options": {
+            "fields": {
+              "availabilityStatus": {
+                "aggregations": [],
+                "operation": "groupby"
+              },
+              "category": {
+                "aggregations": [
+                  "count"
+                ],
+                "operation": "groupby"
+              },
+              "id": {
+                "aggregations": [
+                  "count"
+                ],
+                "operation": "aggregate"
+              }
+            }
+          }
+        }
+      ],
+      "type": "piechart"
+    }
+  ],
+  "preload": false,
+  "refresh": "",
+  "schemaVersion": 40,
+  "tags": [],
+  "templating": {
+    "list": []
+  },
+  "time": {
+    "from": "now-6h",
+    "to": "now"
+  },
+  "timepicker": {},
+  "timezone": "browser",
+  "title": "Infinity",
+  "uid": "eegub48f9ojy8c",
+  "version": 1,
+  "weekStart": ""
+}
