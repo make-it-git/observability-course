@@ -1,0 +1,44 @@
+# Pre-compute SLI ratios from metrics
+groups:
+  - name: sli-availability
+    interval: 30s
+    rules:
+      # Total request count over a sliding window
+      - record: sli:http_requests:rate5m
+        expr: |
+          sum by (service_name) (
+            rate(http_server_request_duration_seconds_count[5m])
+          )
+
+      # Successful request count (non-5xx responses)
+      - record: sli:http_requests_good:rate5m
+        expr: |
+          sum by (service_name) (
+            rate(http_server_request_duration_seconds_count{
+              http_response_status_code!~"5.."
+            }[5m])
+          )
+
+      # SLI ratio: fraction of good requests
+      - record: sli:http_availability:ratio_rate5m
+        expr: |
+          sli:http_requests_good:rate5m
+          /
+          sli:http_requests:rate5m
+
+  - name: sli-latency
+    interval: 30s
+    rules:
+      # Fraction of requests completing within 500ms SLO target
+      - record: sli:http_latency_good:rate5m
+        expr: |
+          sum by (service_name) (
+            rate(http_server_request_duration_seconds_bucket{le="0.5"}[5m])
+          )
+
+      # SLI ratio for latency SLO
+      - record: sli:http_latency:ratio_rate5m
+        expr: |
+          sli:http_latency_good:rate5m
+          /
+          sli:http_requests:rate5m

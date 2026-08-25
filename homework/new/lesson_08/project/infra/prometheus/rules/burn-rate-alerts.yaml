@@ -1,0 +1,98 @@
+# Multi-window burn rate alerts following the Google SRE approach
+# Our demo uses 1-hour intervals instead of monthly budgets, but in reality it will be 30-day interval (usually)
+groups:
+  - name: burn-rate-alerts
+    rules:
+      # Fast burn: 14.4x burn rate over 1 hour, confirmed over 5 minutes
+      # Would exhaust monthly budget in ~2 days
+      - alert: SLOHighBurnRate_Fast
+        expr: |
+          (
+            1 - (
+              sum by (service_name) (rate(http_server_request_duration_seconds_count{http_response_status_code!~"5.."}[1h]))
+              /
+              sum by (service_name) (rate(http_server_request_duration_seconds_count[1h]))
+            )
+          )
+          /
+          (1 - 0.999)
+          > 14.4
+          and
+          (
+            1 - (
+              sum by (service_name) (rate(http_server_request_duration_seconds_count{http_response_status_code!~"5.."}[5m]))
+              /
+              sum by (service_name) (rate(http_server_request_duration_seconds_count[5m]))
+            )
+          )
+          /
+          (1 - 0.999)
+          > 14.4
+        for: 2m
+        labels:
+          severity: critical
+          slo: availability
+        annotations:
+          summary: "{{ $labels.service_name }} is burning error budget 14x faster than normal"
+
+      # Medium burn: 6x burn rate over 6 hours, confirmed over 30 minutes
+      - alert: SLOHighBurnRate_Medium
+        expr: |
+          (
+            1 - (
+              sum by (service_name) (rate(http_server_request_duration_seconds_count{http_response_status_code!~"5.."}[6h]))
+              /
+              sum by (service_name) (rate(http_server_request_duration_seconds_count[6h]))
+            )
+          )
+          /
+          (1 - 0.999)
+          > 6
+          and
+          (
+            1 - (
+              sum by (service_name) (rate(http_server_request_duration_seconds_count{http_response_status_code!~"5.."}[30m]))
+              /
+              sum by (service_name) (rate(http_server_request_duration_seconds_count[30m]))
+            )
+          )
+          /
+          (1 - 0.999)
+          > 6
+        for: 5m
+        labels:
+          severity: warning
+          slo: availability
+        annotations:
+          summary: "{{ $labels.service_name }} is burning error budget 6x faster than normal"
+
+      # Slow burn: 3x burn rate over 1 day, confirmed over 2 hours
+      - alert: SLOHighBurnRate_Slow
+        expr: |
+          (
+            1 - (
+              sum by (service_name) (rate(http_server_request_duration_seconds_count{http_response_status_code!~"5.."}[1d]))
+              /
+              sum by (service_name) (rate(http_server_request_duration_seconds_count[1d]))
+            )
+          )
+          /
+          (1 - 0.999)
+          > 3
+          and
+          (
+            1 - (
+              sum by (service_name) (rate(http_server_request_duration_seconds_count{http_response_status_code!~"5.."}[2h]))
+              /
+              sum by (service_name) (rate(http_server_request_duration_seconds_count[2h]))
+            )
+          )
+          /
+          (1 - 0.999)
+          > 3
+        for: 15m
+        labels:
+          severity: warning
+          slo: availability
+        annotations:
+          summary: "{{ $labels.service_name }} has sustained elevated error budget burn for over 2 hours"
