@@ -1,0 +1,45 @@
+# Usually we calculate error budget remaining over a 30-day rolling window
+# But for demo we will use 1-hour intervals
+groups:
+  - name: error-budget
+    interval: 1m
+    rules:
+      # 1 hour availability ratio
+      - record: slo:http_availability:ratio_1h
+        expr: |
+          sum by (service_name) (
+            sum_over_time(sli:http_requests_good:rate5m[1h])
+          )
+          /
+          sum by (service_name) (
+            sum_over_time(sli:http_requests:rate5m[1h])
+          )
+
+      # Error budget remaining as a fraction (1.0 = full budget, 0.0 = exhausted)
+      # For a 99.9% SLO, the budget is 0.001
+      - record: slo:http_availability:error_budget_remaining
+        expr: |
+          1 - (
+            (1 - slo:http_availability:ratio_1h)
+            /
+            (1 - 0.999)
+          )
+
+      # Same for latency SLO (99.5% of requests under 500ms)
+      - record: slo:http_latency:ratio_1h
+        expr: |
+          sum by (service_name) (
+            sum_over_time(sli:http_latency_good:rate5m[1h])
+          )
+          /
+          sum by (service_name) (
+            sum_over_time(sli:http_requests:rate5m[1h])
+          )
+
+      - record: slo:http_latency:error_budget_remaining
+        expr: |
+          1 - (
+            (1 - slo:http_latency:ratio_1h)
+            /
+            (1 - 0.995)
+          )
