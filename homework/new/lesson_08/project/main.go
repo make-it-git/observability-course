@@ -35,7 +35,8 @@ func orderHandler(w http.ResponseWriter, r *http.Request) {
 	count := atomic.AddUint64(&reqCounter, 1)
 
 	// Demo: Каждый 3-й запрос зависает
-	if count%3 == 0 && false {
+        // Поставьте условие && false или просто уберите if целиком, чтобы "починить" проблему
+	if count%3 == 0 && true {
 		time.Sleep(1200 * time.Millisecond) // Каскадная задержка
 
 		requestDuration.WithLabelValues(serviceName, "/orders", "500").Observe(time.Since(start).Seconds())
