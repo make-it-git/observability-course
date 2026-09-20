@@ -14,7 +14,7 @@
 
 ## Задача
 
-Проект находится в репозитории: [observability-course/lesson_05/project](https://github.com/make-it-git/observability-course/tree/main/homework/new/lesson_04/project).
+Проект находится в репозитории: [project](https://github.com/make-it-git/observability-course/tree/main/homework/new/lesson_04/project).
 
 Ваша задача — построить дашборд, по которому можно анализировать работу обоих сервисов в разрезе:
 
