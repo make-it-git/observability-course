@@ -20,13 +20,6 @@ distributor:
         grpc:
           endpoint: "tempo:4317"
 
-ingester:
-  max_block_duration: 5m
-
-compactor:
-  compaction:
-    block_retention: 1h
-
 metrics_generator:
   registry:
     external_labels:
@@ -37,8 +30,6 @@ metrics_generator:
     remote_write:
       - url: http://victoriametrics:8482/api/v1/write
         send_exemplars: true
-  traces_storage:
-    path: /var/tempo/generator/traces
 
 storage:
   trace:
@@ -51,5 +42,4 @@ storage:
 overrides:
   defaults:
     metrics_generator:
-      processors: [service-graphs, span-metrics, local-blocks]
-      generate_native_histograms: both
+      processors: [service-graphs, span-metrics]
