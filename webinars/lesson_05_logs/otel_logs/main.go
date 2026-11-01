@@ -31,7 +31,7 @@ func main() {
 		InitialInterval: time.Second,
 		MaxInterval:     time.Second * 5,
 		MaxElapsedTime:  time.Second * 30,
-	}), otlploggrpc.WithReconnectionPeriod(time.Second*3))
+	}), otlploggrpc.WithReconnectionPeriod(time.Second*3), otlploggrpc.WithInsecure())
 	if err != nil {
 		panic(err)
 	}
