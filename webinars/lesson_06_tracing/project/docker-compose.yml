@@ -29,8 +29,8 @@ services:
   otel-collector:
     container_name: otel-collector
     # image: otel/opentelemetry-collector:latest
-    image: otel/opentelemetry-collector-contrib
-    command: ["--config=/etc/otel-collector-config.yaml"]
+    image: otel/opentelemetry-collector-contrib:0.165.0
+    command: ["--config=/etc/otel-collector-cfg.yaml"]
     depends_on:
       - tempo
       - loki
@@ -39,7 +39,7 @@ services:
       - "55679:55679"
       - "8888:8888"
     volumes:
-      - ./infra/otel/otel-collector-config.yaml:/etc/otel-collector-config.yaml
+      - ./infra/otel/otel-collector-config.yaml:/etc/otel-collector-cfg.yaml
 
   victoriametrics:
     container_name: victoriametrics
@@ -73,7 +73,7 @@ services:
 
   tempo:
     container_name: tempo
-    image: grafana/tempo:latest
+    image: grafana/tempo:3.1.1
     command: ["-config.file=/etc/tempo.yaml"]
     volumes:
       - ./infra/tempo/tempo.yaml:/etc/tempo.yaml
@@ -107,7 +107,7 @@ services:
       - GF_SECURITY_ADMIN_USER=admin
       - GF_FEATURE_TOGGLES_ENABLE=traceqlEditor
       - GF_PLUGINS_ENABLE=tempo,loki,pyroscope
-      - GF_INSTALL_PLUGINS=https://github.com/grafana/grafana-infinity-datasource/releases/download/v2.4.0/yesoreyeram-infinity-datasource-2.4.0.zip;yesoreyeram-infinity-datasource
+      #- GF_INSTALL_PLUGINS=https://github.com/grafana/grafana-infinity-datasource/releases/download/v2.4.0/yesoreyeram-infinity-datasource-2.4.0.zip;yesoreyeram-infinity-datasource
     volumes:
       - ./infra/grafana/provisioning:/etc/grafana/provisioning
 

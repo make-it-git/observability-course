@@ -57,9 +57,13 @@ extensions:
   zpages:
     # https://github.com/open-telemetry/opentelemetry-collector/blob/main/extension/zpagesextension/README.md
     endpoint: "0.0.0.0:55679" # http://localhost:55679/debug/pipelinez
+    expvar:
+      enabled: true
 service:
   extensions: [zpages]
   telemetry:
+    traces:
+      level: detailed
     logs:
       level: "debug"
     metrics:
